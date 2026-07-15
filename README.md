@@ -12,7 +12,8 @@ This repository is deliberately **problem-first**. A model change is added only 
 - EXP-001: compact pipeline baseline completed on the A4000.
 - EXP-002: pinned official OpenSTL SimVP compatibility gate passed.
 - EXP-003: native 384×384 memory passed; ordinary long training rejected by runtime.
-- EXP-004: native-resolution one-sample overfit and steady-state rate ready to run.
+- EXP-004: native-resolution one-sample learnability gate passed.
+- EXP-005: short official-SimVP lead-time diagnostic baseline ready to run.
 
 ## Repository layout
 
@@ -51,6 +52,7 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [EXP-002: official OpenSTL SimVP compatibility gate](experiments/EXP-002-openstl-simvp/README.md)
 - [EXP-003: native-resolution OpenSTL SimVP gate](experiments/EXP-003-openstl-384-gate/README.md)
 - [EXP-004: one-sample overfit and throughput gate](experiments/EXP-004-overfit-throughput/README.md)
+- [EXP-005: short lead-time diagnostic baseline](experiments/EXP-005-short-diagnostic-baseline/README.md)
 
 ## Implementation references
 
