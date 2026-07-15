@@ -25,6 +25,14 @@ class ManifestBuilderTest(unittest.TestCase):
                     "pct_missing": "0",
                 },
                 {
+                    "id": "train-boundary-event",
+                    "file_name": "data/vil/train-boundary.h5",
+                    "file_index": "3",
+                    "img_type": "vil",
+                    "time_utc": "2019-01-01T00:00:00",
+                    "pct_missing": "0",
+                },
+                {
                     "id": "val-event",
                     "file_name": "data/vil/val.h5",
                     "file_index": "1",
@@ -38,6 +46,30 @@ class ManifestBuilderTest(unittest.TestCase):
                     "file_index": "2",
                     "img_type": "vil",
                     "time_utc": "2019-07-01T00:00:00",
+                    "pct_missing": "0",
+                },
+                {
+                    "id": "val-boundary-event",
+                    "file_name": "data/vil/val-boundary.h5",
+                    "file_index": "4",
+                    "img_type": "vil",
+                    "time_utc": "2019-06-01T00:00:00",
+                    "pct_missing": "0",
+                },
+                {
+                    "id": "duplicate-event",
+                    "file_name": "data/vil/duplicate-a.h5",
+                    "file_index": "5",
+                    "img_type": "vil",
+                    "time_utc": "2018-06-01T00:00:00",
+                    "pct_missing": "0",
+                },
+                {
+                    "id": "duplicate-event",
+                    "file_name": "data/vil/duplicate-b.h5",
+                    "file_index": "6",
+                    "img_type": "vil",
+                    "time_utc": "2018-06-01T00:00:00",
                     "pct_missing": "0",
                 },
             ]
@@ -67,13 +99,16 @@ class ManifestBuilderTest(unittest.TestCase):
             with output.open(newline="", encoding="utf-8") as handle:
                 manifest = list(csv.DictReader(handle))
 
-        self.assertEqual(len(manifest), 9)
+        self.assertEqual(len(manifest), 15)
         event_splits: dict[str, set[str]] = {}
         for row in manifest:
             event_splits.setdefault(row["event_id"], set()).add(row["split"])
         self.assertEqual(event_splits["train-event"], {"train"})
+        self.assertEqual(event_splits["train-boundary-event"], {"train"})
         self.assertEqual(event_splits["val-event"], {"val"})
+        self.assertEqual(event_splits["val-boundary-event"], {"val"})
         self.assertEqual(event_splits["test-event"], {"test"})
+        self.assertNotIn("duplicate-event", event_splits)
 
 
 if __name__ == "__main__":

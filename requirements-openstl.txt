@@ -1,0 +1,6 @@
+# Installed with --no-deps inside a system-site-packages virtual environment.
+# This preserves the laboratory's working torch==2.8.0+cu128 installation.
+OpenSTL @ git+https://github.com/chengtan9907/OpenSTL.git@eecf8a3078f0a178dbc7b28723da20f94ce36985
+timm==1.0.21
+scipy==1.16.2
+torchvision==0.23.0
