@@ -31,7 +31,7 @@ The smoke test allocates only a small tensor and performs a matrix multiplicatio
 
 ## Return
 
-Share the JSON after checking the optional `platform` field and any paths shown by package tooling. The script does not intentionally collect usernames, hostnames, environment variables or GPU serial numbers.
+Share the JSON after checking the optional `platform` field and any paths shown by package tooling. The script does not intentionally collect usernames, hostnames, environment variables or GPU serial numbers. The local artifact is ignored by Git; a reviewed copy may be saved as `experiments/EXP-000-environment/result.json`.
 
 ## Success condition
 
@@ -44,4 +44,3 @@ Share the JSON after checking the optional `platform` field and any paths shown 
 ## Stop condition
 
 If importing PyTorch fails, do not install packages ad hoc. Return the error recorded in the JSON so the baseline environment can be specified once.
-

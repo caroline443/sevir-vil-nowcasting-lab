@@ -27,7 +27,7 @@ python scripts/collect_environment.py \
   --output artifacts/local/a4000_environment.json
 ```
 
-Commit the generated JSON only after checking it contains no private paths or machine identifiers you do not want to publish. Alternatively, paste its contents into the corresponding experiment discussion.
+The generated file is ignored by Git. After checking it, either paste its contents into the experiment discussion or copy a sanitized version to `experiments/EXP-000-environment/result.json` for review.
 
 ## Research rules
 
@@ -44,4 +44,3 @@ Commit the generated JSON only after checking it contains no private paths or ma
 - [Problem-first roadmap](docs/problem-first-roadmap.md)
 - [Experiment protocol](experiments/README.md)
 - [EXP-000: A4000 environment audit](experiments/EXP-000-environment/README.md)
-
