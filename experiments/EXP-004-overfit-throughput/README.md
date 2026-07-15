@@ -1,6 +1,6 @@
 # EXP-004: native-resolution one-sample overfit and steady-state rate
 
-Status: ready for A4000 execution
+Status: completed — learnability passed, fixed-LR transient exposed
 
 ## Question
 
@@ -28,6 +28,8 @@ PYTHONPATH=src python scripts/smoke_openstl_simvp.py \
 
 The same first training window is reused for all 100 updates. Expected runtime is a few minutes. Return `artifacts/local/exp004_overfit100_384.json` and do not start another run.
 
+The A4000 run completed successfully on 2026-07-15. Loss fell from 0.05663 to 0.01127, a reduction of 80.10%, and steady average step time was 0.390 seconds. Peak allocated memory was approximately 9.12 GiB. See [`result-summary.json`](result-summary.json).
+
 ## Success condition
 
 - all 100 AMP updates finish without OOM or non-finite loss;
@@ -40,3 +42,7 @@ The same first training window is reused for all 100 updates. Expected runtime i
 - non-finite or strongly increasing loss blocks all longer experiments;
 - weak loss reduction blocks baseline training until target alignment and optimizer settings are diagnosed;
 - even after success, do not launch a native-resolution epoch. The result will instead determine a cheaper development protocol for failure-mode discovery.
+
+## Outcome
+
+The official architecture and 13→12 target path can learn a native-resolution example, so longer work is not blocked by a fundamental tensor-alignment error. However, loss jumped to 2.406 during steps 3–5 before recovering. EXP-004 intentionally reused the compatibility probe's fixed AdamW learning rate; OpenSTL's actual defaults are Adam with zero weight decay and OneCycle scheduling. Therefore the spike is treated as an optimizer-protocol warning, not a model failure. EXP-005 begins problem diagnosis using Adam and OneCycle while remaining explicitly shorter than a paper-reproduction run.
