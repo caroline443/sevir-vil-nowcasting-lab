@@ -10,7 +10,8 @@ This repository is deliberately **problem-first**. A model change is added only 
 - Candidate research problems: documented but not yet selected.
 - Compute target: one RTX A4000; paid RTX 5090 use only after a small experiment establishes value.
 - EXP-001: compact pipeline baseline completed on the A4000.
-- EXP-002: pinned official OpenSTL SimVP compatibility gate ready to run.
+- EXP-002: pinned official OpenSTL SimVP compatibility gate passed.
+- EXP-003: native 384×384 memory and throughput gate ready to run.
 
 ## Repository layout
 
@@ -47,6 +48,7 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [EXP-000: A4000 environment audit](experiments/EXP-000-environment/README.md)
 - [EXP-001: minimal SimVP baseline](experiments/EXP-001-simvp-baseline/README.md)
 - [EXP-002: official OpenSTL SimVP compatibility gate](experiments/EXP-002-openstl-simvp/README.md)
+- [EXP-003: native-resolution OpenSTL SimVP gate](experiments/EXP-003-openstl-384-gate/README.md)
 
 ## Implementation references
 

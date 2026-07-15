@@ -8,6 +8,7 @@ import hashlib
 import importlib.metadata
 import importlib.util
 import json
+import math
 import platform
 import time
 from pathlib import Path
@@ -149,11 +150,14 @@ def main() -> int:
     scaler.update()
     torch.cuda.synchronize(device)
     elapsed = time.perf_counter() - start
+    estimated_epoch_steps = math.ceil(len(dataset) / args.batch_size)
 
     result = {
         "ok": True,
         "amp": use_amp,
         "batch_size": args.batch_size,
+        "dataset_samples": len(dataset),
+        "dataset_split": args.split,
         "device": torch.cuda.get_device_name(device),
         "input_shape": list(inputs.shape),
         "target_shape": list(targets.shape),
@@ -164,6 +168,8 @@ def main() -> int:
         "peak_allocated_bytes": torch.cuda.max_memory_allocated(device),
         "resolution": args.resolution,
         "step_seconds": elapsed,
+        "single_step_epoch_estimate_seconds": estimated_epoch_steps * elapsed,
+        "estimated_epoch_steps": estimated_epoch_steps,
         "python_version": platform.python_version(),
         "torch_version": torch.__version__,
         "torchvision_version": package_version("torchvision"),
