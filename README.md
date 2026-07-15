@@ -14,7 +14,8 @@ This repository is deliberately **problem-first**. A model change is added only 
 - EXP-003: native 384×384 memory passed; ordinary long training rejected by runtime.
 - EXP-004: native-resolution one-sample learnability gate passed.
 - EXP-005: candidate lead-time-dependent intensity collapse identified.
-- EXP-006: persistence control for the candidate problem ready to run.
+- EXP-006: persistence confirms intensity-selective tail collapse.
+- EXP-007: 4000-step training-budget control ready to run.
 
 ## Repository layout
 
@@ -55,6 +56,7 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [EXP-004: one-sample overfit and throughput gate](experiments/EXP-004-overfit-throughput/README.md)
 - [EXP-005: short lead-time diagnostic baseline](experiments/EXP-005-short-diagnostic-baseline/README.md)
 - [EXP-006: persistence control](experiments/EXP-006-persistence-control/README.md)
+- [EXP-007: training-budget control](experiments/EXP-007-training-budget-control/README.md)
 
 ## Implementation references
 

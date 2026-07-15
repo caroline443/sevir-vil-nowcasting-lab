@@ -1,0 +1,63 @@
+{
+  "validation_protocol": {
+    "batch_size": 8,
+    "batches": 200,
+    "resolution": 128,
+    "samples_upper_bound": 1600
+  },
+  "overall": {
+    "persistence_csi_mean": 0.21505653693805094,
+    "persistence_mse": 0.008085272966832235,
+    "simvp_csi_mean": 0.25960685978012665,
+    "simvp_csi_relative_gain_over_persistence": 0.20715632956978602,
+    "simvp_mse": 0.0031961469866943542,
+    "simvp_mse_reduction_vs_persistence": 0.6046952280021058
+  },
+  "lead_minutes": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+  "persistence_csi_mean_by_lead": [
+    0.4048965924,
+    0.3003441544,
+    0.2542909975,
+    0.2280574041,
+    0.2095009787,
+    0.195882221,
+    0.1851387037,
+    0.176231621,
+    0.1670182582,
+    0.159121803,
+    0.152975099,
+    0.1472206102
+  ],
+  "simvp_csi_mean_by_lead": [
+    0.4385770503,
+    0.3447542422,
+    0.303520665,
+    0.2771566328,
+    0.2583204564,
+    0.2440019253,
+    0.231574642,
+    0.2207585693,
+    0.2110590764,
+    0.2027329114,
+    0.1947687234,
+    0.1880574229
+  ],
+  "threshold_crossover": {
+    "16": "simvp_better_at_all_leads",
+    "74": "simvp_better_at_all_leads",
+    "133": "persistence_better_at_55_and_60_minutes",
+    "160": "persistence_better_from_15_minutes",
+    "181": "persistence_better_at_all_leads",
+    "219": "persistence_better_at_all_leads"
+  },
+  "forecast_pixel_evidence": {
+    "persistence_160_constant": 59176,
+    "simvp_160_at_5_and_60_minutes": [31001, 83],
+    "persistence_181_constant": 20271,
+    "simvp_181_at_5_and_30_minutes": [6382, 0],
+    "persistence_219_constant": 2366,
+    "simvp_219_at_5_and_15_minutes": [364, 0],
+    "persistence_16_constant": 6032191,
+    "simvp_16_at_5_and_60_minutes": [6147782, 6727915]
+  }
+}
