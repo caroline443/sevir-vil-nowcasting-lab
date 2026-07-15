@@ -61,6 +61,12 @@ def parse_args() -> argparse.Namespace:
         default=2.0,
         help="soft-threshold sigmoid temperature in raw VIL units",
     )
+    parser.add_argument(
+        "--amp-dtype",
+        choices=("float16", "bfloat16"),
+        default="float16",
+        help="CUDA autocast dtype; bfloat16 has FP32-like exponent range",
+    )
     parser.add_argument("--no-amp", action="store_true")
     args = parser.parse_args()
     if args.epochs < 1 or args.max_train_batches < 1 or args.max_val_batches < 1:
@@ -134,10 +140,11 @@ def compute_training_objective(
     tail_area_weight: float,
     *,
     autocast_enabled: bool,
+    autocast_dtype: torch.dtype,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Compute the objective, optionally using an AMP model forward."""
     with torch.autocast(
-        "cuda", dtype=torch.float16, enabled=autocast_enabled
+        "cuda", dtype=autocast_dtype, enabled=autocast_enabled
     ):
         predictions = predict_12(model, inputs)
     mse_loss = mse_criterion(predictions.float(), targets.float())
@@ -157,6 +164,7 @@ def evaluate(
     device: torch.device,
     max_batches: int,
     use_amp: bool,
+    amp_dtype: torch.dtype,
 ) -> tuple[dict[str, object], int]:
     model.eval()
     metrics = LeadTimeVILMetrics(output_length=12)
@@ -166,7 +174,7 @@ def evaluate(
             break
         inputs = batch["inputs"].to(device, non_blocking=True)
         targets = batch["targets"].to(device, non_blocking=True)
-        with torch.autocast("cuda", dtype=torch.float16, enabled=use_amp):
+        with torch.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
             predictions = predict_12(model, inputs)
         metrics.update(predictions, targets)
         completed += 1
@@ -186,6 +194,15 @@ def main() -> int:
     total_steps = args.epochs * steps_per_epoch
 
     device = torch.device("cuda:0")
+    amp_dtype = (
+        torch.float16 if args.amp_dtype == "float16" else torch.bfloat16
+    )
+    if (
+        not args.no_amp
+        and amp_dtype == torch.bfloat16
+        and not torch.cuda.is_bf16_supported()
+    ):
+        raise RuntimeError("this CUDA device/runtime does not support bfloat16 AMP")
     model = build_model(args.resolution).to(device)
     # OpenSTL defaults to Adam with zero weight decay. Its SEVIR config sets
     # max_lr=5e-3 and sched='onecycle'. The pilot compresses that schedule into
@@ -203,7 +220,8 @@ def main() -> int:
         temperature_raw=args.tail_temperature_raw,
     ).to(device)
     use_amp = not args.no_amp
-    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+    use_grad_scaler = use_amp and amp_dtype == torch.float16
+    scaler = torch.amp.GradScaler("cuda", enabled=use_grad_scaler)
 
     torch.cuda.reset_peak_memory_stats(device)
     start = time.perf_counter()
@@ -232,6 +250,7 @@ def main() -> int:
                 tail_criterion,
                 args.tail_area_weight,
                 autocast_enabled=use_amp,
+                autocast_dtype=amp_dtype,
             )
             used_fp32_fallback = False
             if use_amp and not torch.isfinite(loss):
@@ -245,6 +264,7 @@ def main() -> int:
                     tail_criterion,
                     args.tail_area_weight,
                     autocast_enabled=False,
+                    autocast_dtype=amp_dtype,
                 )
                 used_fp32_fallback = True
                 amp_fp32_fallbacks += 1
@@ -259,7 +279,7 @@ def main() -> int:
             scaler.step(optimizer)
             scaler.update()
             scale_after = scaler.get_scale()
-            optimizer_step_skipped = use_amp and scale_after < scale_before
+            optimizer_step_skipped = use_grad_scaler and scale_after < scale_before
             if optimizer_step_skipped:
                 # GradScaler found non-finite gradients and did not call
                 # optimizer.step(); advancing OneCycleLR here is incorrect.
@@ -290,7 +310,7 @@ def main() -> int:
                 print(json.dumps(entry, sort_keys=True))
 
     validation, val_batches = evaluate(
-        model, val_loader, device, args.max_val_batches, use_amp
+        model, val_loader, device, args.max_val_batches, use_amp, amp_dtype
     )
     torch.cuda.synchronize(device)
     elapsed = time.perf_counter() - start
@@ -300,6 +320,8 @@ def main() -> int:
         "purpose": "bounded_diagnostic_pilot_not_full_reproduction",
         "device": torch.cuda.get_device_name(device),
         "torch_version": torch.__version__,
+        "amp_dtype": args.amp_dtype if use_amp else "disabled",
+        "grad_scaler_enabled": use_grad_scaler,
         "parameters": sum(parameter.numel() for parameter in model.parameters()),
         "peak_allocated_bytes": torch.cuda.max_memory_allocated(device),
         "wall_seconds": elapsed,

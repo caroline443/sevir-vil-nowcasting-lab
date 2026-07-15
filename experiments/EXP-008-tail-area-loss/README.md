@@ -133,3 +133,14 @@ record fallback and skipped-update counts. Seed 1 must be rerun as a pair before
 seed 2. If frequent fallbacks or true FP32 divergence occurs, the 5e-3 protocol
 is considered numerically unstable and all seed-0 scores must later be rerun
 under a newly frozen stable protocol.
+
+The completed seed-1 FP16 diagnostic required 1,642 FP32 fallbacks out of 4,000
+batches (41.05%), skipped four optimizer updates, doubled runtime to 72 minutes
+and peaked at 14.77 GB allocated memory. Its forecast metrics are invalid for
+paired inference. No EXP-008 counterpart should be trained under this protocol.
+
+The next candidate protocol uses BF16 autocast. On supported Ampere hardware,
+BF16 retains mixed-precision storage and throughput while using an FP32-like
+exponent range, directly addressing activation overflow rather than hiding it
+with frequent full-precision retries. The candidate is accepted only if a full
+seed-1 baseline completes with zero FP32 fallbacks and zero skipped updates.
