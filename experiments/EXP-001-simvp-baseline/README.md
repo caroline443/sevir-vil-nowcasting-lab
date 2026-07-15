@@ -1,6 +1,6 @@
 # EXP-001: minimal SimVP baseline
 
-Status: planned
+Status: running — Stage A completed
 
 ## Question
 
@@ -25,6 +25,8 @@ PYTHONPATH=src python scripts/smoke_simvp.py \
 
 Return `artifacts/local/exp001_smoke.json` before starting real training.
 
+Stage A completed successfully on 2026-07-15. The measured peak allocation was approximately 462 MiB for batch size 2, leaving substantial margin under the 12 GiB gate. See [`smoke-result.json`](smoke-result.json).
+
 ### Stage A success condition
 
 - output shape is `[2, 12, 1, 128, 128]`;
@@ -42,6 +44,16 @@ Install only the data dependencies if they are absent:
 ```bash
 python -m pip install -r requirements-data.txt
 ```
+
+Before building a manifest, verify the downloaded dataset layout without exposing its absolute path:
+
+```bash
+python scripts/inspect_sevir_layout.py \
+  --data-root /path/to/SEVIR \
+  --output artifacts/local/sevir_layout.json
+```
+
+Return `artifacts/local/sevir_layout.json`. Continue only when the report confirms a `vil` HDF5 dataset with one event shaped as either `[384, 384, 49]` or `[49, 384, 384]`.
 
 Create a time-based manifest from the raw SEVIR catalog. The dates below define a development split, not a claim of exact equivalence with another paper:
 
@@ -89,5 +101,6 @@ Do not launch a full training run if:
 ## Required return files
 
 - `artifacts/local/exp001_smoke.json` after Stage A;
+- `artifacts/local/sevir_layout.json` before manifest generation;
 - `artifacts/local/exp001_train100/summary.json` and `metrics.csv` after Stage C;
 - the exact manifest command, but not private absolute data paths in a public commit.
