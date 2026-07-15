@@ -15,7 +15,8 @@ This repository is deliberately **problem-first**. A model change is added only 
 - EXP-004: native-resolution one-sample learnability gate passed.
 - EXP-005: candidate lead-time-dependent intensity collapse identified.
 - EXP-006: persistence confirms intensity-selective tail collapse.
-- EXP-007: 4000-step training-budget control ready to run.
+- EXP-007: training-budget control confirms persistent severe-tail extinction.
+- Innovation stage: five problem-matched solution paths documented; soft exceedance-area calibration is the first recommended test.
 
 ## Repository layout
 
@@ -57,6 +58,7 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [EXP-005: short lead-time diagnostic baseline](experiments/EXP-005-short-diagnostic-baseline/README.md)
 - [EXP-006: persistence control](experiments/EXP-006-persistence-control/README.md)
 - [EXP-007: training-budget control](experiments/EXP-007-training-budget-control/README.md)
+- [Validated problem and solution paths](docs/validated-problem-and-solution-paths.md)
 
 ## Implementation references
 
