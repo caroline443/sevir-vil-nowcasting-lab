@@ -16,6 +16,7 @@ This repository is deliberately **problem-first**. A model change is added only 
 - EXP-005: candidate lead-time-dependent intensity collapse identified.
 - EXP-006: persistence confirms intensity-selective tail collapse.
 - EXP-007: training-budget control confirms persistent severe-tail extinction.
+- EXP-009: BF16 numerical protocol gate pending after seed-dependent FP16 overflow.
 - Innovation stage: five problem-matched solution paths documented; soft exceedance-area calibration is the first recommended test.
 
 ## Repository layout
@@ -58,6 +59,8 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [EXP-005: short lead-time diagnostic baseline](experiments/EXP-005-short-diagnostic-baseline/README.md)
 - [EXP-006: persistence control](experiments/EXP-006-persistence-control/README.md)
 - [EXP-007: training-budget control](experiments/EXP-007-training-budget-control/README.md)
+- [EXP-008: severe-tail area calibration](experiments/EXP-008-tail-area-loss/README.md)
+- [EXP-009: BF16 numerical protocol gate](experiments/EXP-009-bf16-protocol-gate/README.md)
 - [Validated problem and solution paths](docs/validated-problem-and-solution-paths.md)
 - [Paper-facing evaluation protocol](docs/evaluation-protocol.md)
 
