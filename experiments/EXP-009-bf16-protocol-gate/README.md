@@ -57,3 +57,7 @@ Before retraining the proposed arm, the tail-loss gradient scale is checked once
 on this BF16 checkpoint. This is a protocol-transfer check, not a validation-score
 hyperparameter sweep. A result close to the existing `3e-4` weight preserves that
 weight; a material mismatch requires a newly documented pre-training decision.
+
+The BF16 probe recommended `3.439e-4`, versus `3.216e-4` on the earlier FP16
+checkpoint. The 6.9% difference is small relative to the pre-registered rounded
+weight, so `3e-4` is retained without tuning.

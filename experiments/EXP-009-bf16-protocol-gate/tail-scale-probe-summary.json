@@ -1,0 +1,10 @@
+{
+  "amp_dtype": "bfloat16",
+  "decision": "retain_frozen_weight",
+  "median_gradient_cosine": 0.00407841824364931,
+  "previous_fp16_recommended_weight": 0.00032160326255863873,
+  "recommended_tail_area_weight": 0.00034389224037162933,
+  "retained_tail_area_weight": 0.0003,
+  "temperature_raw": 10.0,
+  "validation_batches": 8
+}
