@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
@@ -31,9 +32,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def choose_split(timestamp: datetime, train_end: datetime, val_end: datetime) -> str:
-    if timestamp < train_end:
+    """Match Earthformer's official ``start < t <= end`` split semantics."""
+
+    if timestamp <= train_end:
         return "train"
-    if timestamp < val_end:
+    if timestamp <= val_end:
         return "val"
     return "test"
 
@@ -46,7 +49,7 @@ def main() -> int:
     if any(start < 0 or start + 25 > 49 for start in starts):
         raise ValueError("each start frame must define a valid 25-frame window in 49 frames")
 
-    output_rows: list[dict[str, str | int]] = []
+    catalog_rows: list[dict[str, str]] = []
     with args.catalog.open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
         required = {"id", "file_name", "file_index", "img_type", "time_utc"}
@@ -60,19 +63,28 @@ def main() -> int:
             missing_percent = float(row.get("pct_missing") or 0.0)
             if missing_percent > args.max_missing_percent:
                 continue
-            timestamp = parse_date(row["time_utc"])
-            split = choose_split(timestamp, args.train_end, args.val_end)
-            for start in starts:
-                output_rows.append(
-                    {
-                        "event_id": row["id"],
-                        "file_path": row["file_name"],
-                        "file_index": int(row["file_index"]),
-                        "start_frame": start,
-                        "split": split,
-                        "time_utc": row["time_utc"],
-                    }
-                )
+            catalog_rows.append(row)
+
+    # Earthformer's official SEVIR loader drops every duplicated ID instead of
+    # selecting one ambiguous catalog row. Match that behavior for VIL-only use.
+    id_counts = Counter(row["id"] for row in catalog_rows)
+    unique_rows = [row for row in catalog_rows if id_counts[row["id"]] == 1]
+
+    output_rows: list[dict[str, str | int]] = []
+    for row in unique_rows:
+        timestamp = parse_date(row["time_utc"])
+        split = choose_split(timestamp, args.train_end, args.val_end)
+        for start in starts:
+            output_rows.append(
+                {
+                    "event_id": row["id"],
+                    "file_path": row["file_name"],
+                    "file_index": int(row["file_index"]),
+                    "start_frame": start,
+                    "split": split,
+                    "time_utc": row["time_utc"],
+                }
+            )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="", encoding="utf-8") as handle:
@@ -86,7 +98,11 @@ def main() -> int:
     counts = {split: 0 for split in ("train", "val", "test")}
     for row in output_rows:
         counts[str(row["split"])] += 1
-    print(f"wrote {len(output_rows)} windows to {args.output}: {counts}")
+    duplicate_rows = len(catalog_rows) - len(unique_rows)
+    print(
+        f"wrote {len(output_rows)} windows to {args.output}: {counts}; "
+        f"dropped {duplicate_rows} rows with duplicated VIL IDs"
+    )
     return 0
 
 

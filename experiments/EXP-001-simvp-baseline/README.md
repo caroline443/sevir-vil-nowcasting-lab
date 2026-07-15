@@ -59,6 +59,8 @@ The layout inspection completed successfully on 2026-07-15: 20,393 VIL catalog r
 
 Create a time-based manifest from the raw SEVIR catalog. The dates below define a development split, not a claim of exact equivalence with another paper:
 
+> Protocol note: EXP-002 corrected split-boundary semantics and duplicate-ID handling to match Earthformer. Rebuild the manifest with the current script before any later experiment; do not reuse the EXP-001 manifest for scientific results.
+
 ```bash
 python scripts/build_sevir_manifest.py \
   --catalog /path/to/SEVIR/CATALOG.csv \
