@@ -59,6 +59,7 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [EXP-006: persistence control](experiments/EXP-006-persistence-control/README.md)
 - [EXP-007: training-budget control](experiments/EXP-007-training-budget-control/README.md)
 - [Validated problem and solution paths](docs/validated-problem-and-solution-paths.md)
+- [Paper-facing evaluation protocol](docs/evaluation-protocol.md)
 
 ## Implementation references
 
