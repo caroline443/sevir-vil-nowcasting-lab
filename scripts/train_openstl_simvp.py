@@ -125,6 +125,31 @@ def predict_12(model: nn.Module, inputs: torch.Tensor) -> torch.Tensor:
     return model(inputs)[:, :12]
 
 
+def compute_training_objective(
+    model: nn.Module,
+    inputs: torch.Tensor,
+    targets: torch.Tensor,
+    mse_criterion: nn.Module,
+    tail_criterion: nn.Module,
+    tail_area_weight: float,
+    *,
+    autocast_enabled: bool,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Compute the objective, optionally using an AMP model forward."""
+    with torch.autocast(
+        "cuda", dtype=torch.float16, enabled=autocast_enabled
+    ):
+        predictions = predict_12(model, inputs)
+    mse_loss = mse_criterion(predictions.float(), targets.float())
+    if tail_area_weight > 0:
+        tail_loss = tail_criterion(predictions, targets)
+    else:
+        # Preserve the baseline objective and memory behavior when disabled.
+        tail_loss = mse_loss.new_zeros(())
+    loss = mse_loss + tail_area_weight * tail_loss
+    return loss, mse_loss, tail_loss
+
+
 @torch.no_grad()
 def evaluate(
     model: nn.Module,
@@ -186,6 +211,9 @@ def main() -> int:
     train_objective_sum = 0.0
     train_mse_sum = 0.0
     train_tail_sum = 0.0
+    amp_fp32_fallbacks = 0
+    skipped_optimizer_updates = 0
+    optimizer_updates = 0
     train_log: list[dict[str, float | int]] = []
 
     for epoch in range(1, args.epochs + 1):
@@ -196,25 +224,49 @@ def main() -> int:
             inputs = batch["inputs"].to(device, non_blocking=True)
             targets = batch["targets"].to(device, non_blocking=True)
             optimizer.zero_grad(set_to_none=True)
-            with torch.autocast("cuda", dtype=torch.float16, enabled=use_amp):
-                predictions = predict_12(model, inputs)
-            mse_loss = mse_criterion(predictions.float(), targets.float())
-            if args.tail_area_weight > 0:
-                tail_loss = tail_criterion(predictions, targets)
-            else:
-                # Preserve the original baseline path when the auxiliary loss
-                # is disabled, including its compute and memory behavior.
-                tail_loss = mse_loss.new_zeros(())
-            loss = mse_loss + args.tail_area_weight * tail_loss
+            loss, mse_loss, tail_loss = compute_training_objective(
+                model,
+                inputs,
+                targets,
+                mse_criterion,
+                tail_criterion,
+                args.tail_area_weight,
+                autocast_enabled=use_amp,
+            )
+            used_fp32_fallback = False
+            if use_amp and not torch.isfinite(loss):
+                # A finite FP32 retry distinguishes batch-specific FP16
+                # activation overflow from genuine model divergence.
+                loss, mse_loss, tail_loss = compute_training_objective(
+                    model,
+                    inputs,
+                    targets,
+                    mse_criterion,
+                    tail_criterion,
+                    args.tail_area_weight,
+                    autocast_enabled=False,
+                )
+                used_fp32_fallback = True
+                amp_fp32_fallbacks += 1
             if not torch.isfinite(loss):
                 raise RuntimeError(
-                    f"non-finite loss at epoch={epoch}, batch={batch_index}: "
+                    f"non-finite loss after FP32 retry at epoch={epoch}, "
+                    f"batch={batch_index}: "
                     f"{float(loss.detach())}"
                 )
+            scale_before = scaler.get_scale()
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
-            scheduler.step()
+            scale_after = scaler.get_scale()
+            optimizer_step_skipped = use_amp and scale_after < scale_before
+            if optimizer_step_skipped:
+                # GradScaler found non-finite gradients and did not call
+                # optimizer.step(); advancing OneCycleLR here is incorrect.
+                skipped_optimizer_updates += 1
+            else:
+                scheduler.step()
+                optimizer_updates += 1
 
             global_step += 1
             loss_value = float(loss.detach())
@@ -231,6 +283,8 @@ def main() -> int:
                     "mse_loss": mse_value,
                     "tail_area_loss": tail_value,
                     "learning_rate": optimizer.param_groups[0]["lr"],
+                    "used_fp32_fallback": used_fp32_fallback,
+                    "optimizer_step_skipped": optimizer_step_skipped,
                 }
                 train_log.append(entry)
                 print(json.dumps(entry, sort_keys=True))
@@ -250,6 +304,9 @@ def main() -> int:
         "peak_allocated_bytes": torch.cuda.max_memory_allocated(device),
         "wall_seconds": elapsed,
         "train_steps": global_step,
+        "optimizer_updates": optimizer_updates,
+        "skipped_optimizer_updates": skipped_optimizer_updates,
+        "amp_fp32_fallbacks": amp_fp32_fallbacks,
         "train_samples": global_step * args.batch_size,
         "mean_train_objective": train_objective_sum / global_step,
         "mean_train_mse": train_mse_sum / global_step,

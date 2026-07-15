@@ -118,3 +118,18 @@ false-alarm/calibration tradeoff.
 
 No mechanism parameter will be changed for seeds 1 and 2. Advancement beyond
 128×128 requires the severe-threshold gains to reproduce across both seeds.
+
+## Seed-1 numerical interruption
+
+The first paired replication attempt produced a non-finite FP16 baseline loss at
+batch 2136. The tail loss was disabled, so this is not evidence against EXP-008.
+The trainer also advanced OneCycleLR after GradScaler had skipped an optimizer
+step, which PyTorch explicitly warned was an invalid ordering.
+
+The numerical policy is now fixed for both arms: retry a non-finite FP16 forward
+once in FP32; fail only if the FP32 objective is also non-finite; and advance the
+scheduler only when GradScaler actually performs an optimizer update. Summaries
+record fallback and skipped-update counts. Seed 1 must be rerun as a pair before
+seed 2. If frequent fallbacks or true FP32 divergence occurs, the 5e-3 protocol
+is considered numerically unstable and all seed-0 scores must later be rerun
+under a newly frozen stable protocol.
