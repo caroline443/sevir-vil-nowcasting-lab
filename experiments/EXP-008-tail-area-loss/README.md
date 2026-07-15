@@ -1,6 +1,6 @@
 # EXP-008: severe-tail area calibration loss
 
-Status: `running — temperature-2 probe rejected before training`
+Status: `running — objective frozen; controlled training pending`
 
 ## Question
 
@@ -60,27 +60,31 @@ python scripts/probe_tail_loss_scale.py \
   --tail-temperature-raw 10
 ```
 
-The weight will be frozen only if the temperature-10 probe removes the
-many-orders-of-magnitude gradient collapse on informative batches.
+The temperature-10 probe passed. Tail gradient norms ranged from `5.44e-4` to
+`7.77e-2`, replacing the temperature-2 span of roughly 15 orders of magnitude
+with about two. The nominal median weight was `3.216e-4`; gradient cosine had a
+median of `-0.00197`, showing no systematic conflict with MSE. The experiment
+therefore freezes a rounded weight of `3e-4`. Neither temperature nor weight may
+be changed after observing the training result.
 
 ## Stage B: controlled training
 
-Do not run this until Stage A fixes `<WEIGHT>`:
+The pre-registered controlled run is:
 
 ```bash
 python scripts/train_openstl_simvp.py \
   --data-root /home/amon/zyx/dataset/sevir_data \
   --manifest artifacts/local/sevir_official_manifest.csv \
-  --output-dir artifacts/local/exp008_tail_area_128 \
+  --output-dir artifacts/local/exp008_tail_area_t10_w3e-4_128 \
   --resolution 128 \
   --batch-size 8 \
   --epochs 1 \
   --max-train-batches 4000 \
   --max-val-batches 200 \
   --learning-rate 0.005 \
-  --tail-area-weight <WEIGHT> \
+  --tail-area-weight 0.0003 \
   --tail-thresholds 160 181 219 \
-  --tail-temperature-raw 2 \
+  --tail-temperature-raw 10 \
   --seed 0 \
   --workers 2
 ```

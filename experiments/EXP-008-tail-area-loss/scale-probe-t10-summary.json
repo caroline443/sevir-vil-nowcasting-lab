@@ -1,0 +1,13 @@
+{
+  "decision": "accept_and_freeze_before_training",
+  "frozen_tail_area_weight": 0.0003,
+  "median_gradient_cosine": -0.0019719910875214816,
+  "nominal_recommended_weight": 0.00032160326255863873,
+  "observed_suggested_weight_max": 0.005269801268892053,
+  "observed_suggested_weight_min": 0.00012333140577441381,
+  "reason": "temperature 10 removes catastrophic sigmoid gradient saturation without systematic conflict with MSE",
+  "tail_gradient_norm_max": 0.07767447829246521,
+  "tail_gradient_norm_min": 0.0005437580985017121,
+  "temperature_raw": 10.0,
+  "validation_batches": 8
+}
