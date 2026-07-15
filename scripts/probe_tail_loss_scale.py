@@ -39,6 +39,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--tail-temperature-raw", type=float, default=2.0)
     parser.add_argument(
+        "--amp-dtype",
+        choices=("float16", "bfloat16"),
+        default="float16",
+        help="autocast dtype used for checkpoint inference",
+    )
+    parser.add_argument(
         "--target-gradient-fraction",
         type=float,
         default=0.1,
@@ -56,6 +62,11 @@ def main() -> int:
         raise RuntimeError("this probe expects a CUDA-capable machine")
     torch.manual_seed(args.seed)
     device = torch.device("cuda:0")
+    amp_dtype = (
+        torch.float16 if args.amp_dtype == "float16" else torch.bfloat16
+    )
+    if amp_dtype == torch.bfloat16 and not torch.cuda.is_bf16_supported():
+        raise RuntimeError("this CUDA device/runtime does not support bfloat16 AMP")
     dataset = SevirVILWindowDataset(
         args.manifest,
         args.data_root,
@@ -87,7 +98,7 @@ def main() -> int:
             break
         inputs = batch["inputs"].to(device, non_blocking=True)
         targets = batch["targets"].to(device, non_blocking=True)
-        with torch.no_grad(), torch.autocast("cuda", dtype=torch.float16):
+        with torch.no_grad(), torch.autocast("cuda", dtype=amp_dtype):
             prediction = predict_12(model, inputs)
         prediction = prediction.detach().float().requires_grad_(True)
         targets = targets.float()
@@ -120,6 +131,7 @@ def main() -> int:
         "ok": True,
         "purpose": "tail_loss_gradient_scale_probe",
         "checkpoint": str(args.checkpoint),
+        "amp_dtype": args.amp_dtype,
         "validation_batches": len(rows),
         "target_gradient_fraction": args.target_gradient_fraction,
         "thresholds_raw": args.tail_thresholds,

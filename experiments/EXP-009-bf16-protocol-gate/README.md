@@ -1,6 +1,6 @@
 # EXP-009: BF16 numerical protocol gate
 
-Status: `planned`
+Status: `completed — BF16 accepted and frozen`
 
 ## Question
 
@@ -45,3 +45,15 @@ Accept BF16 only if all conditions hold:
 If the gate passes, all seed-0/1/2 baseline and proposed runs used for statistical
 comparison must be rerun under BF16. Existing FP16 scores remain development
 evidence only and cannot be mixed into the final mean and standard deviation.
+
+## Result
+
+The gate passed all five conditions: 4,000 batches produced 4,000 optimizer
+updates, with zero FP32 fallbacks and zero skipped updates. Peak allocated memory
+was 8.70 GB and wall time was 2,299 seconds (38.3 minutes), both practical on the
+A4000. BF16 is now the frozen protocol for paired statistical runs.
+
+Before retraining the proposed arm, the tail-loss gradient scale is checked once
+on this BF16 checkpoint. This is a protocol-transfer check, not a validation-score
+hyperparameter sweep. A result close to the existing `3e-4` weight preserves that
+weight; a material mismatch requires a newly documented pre-training decision.
