@@ -1,6 +1,6 @@
 # EXP-008: severe-tail area calibration loss
 
-Status: `planned — gradient-scale probe first`
+Status: `running — temperature-2 probe rejected before training`
 
 ## Question
 
@@ -37,9 +37,31 @@ python scripts/probe_tail_loss_scale.py \
   --max-batches 8
 ```
 
-The reported weight makes the tail-loss gradient norm approximately 10% of the
-MSE gradient norm on the frozen EXP-007 model. Send the resulting JSON for the
-weight to be frozen before Stage B.
+The first probe at temperature 2 was rejected. Across eight batches, tail
+gradient norms ranged from `2.62e-16` to `2.70e-1`, and implied weights ranged
+from `4.53e-5` to `1.09e10`. The nominal median weight was therefore not a stable
+scale estimate. This is sigmoid saturation: after a severe core has fallen more
+than a few VIL units below a threshold, the proposed loss cannot restore it.
+
+Temperature 10 is the next pre-registered gradient-health check. It gives a
+useful gradient over intensity errors of several tens of VIL units, while a
+zero-VIL background remains far below even threshold 160. This is a loss
+implementation check, not selection by forecast validation score:
+
+```bash
+python scripts/probe_tail_loss_scale.py \
+  --data-root /home/amon/zyx/dataset/sevir_data \
+  --manifest artifacts/local/sevir_official_manifest.csv \
+  --checkpoint artifacts/local/exp007_budget4000_128/last.pt \
+  --output artifacts/local/exp008_tail_scale_probe_t10.json \
+  --resolution 128 \
+  --batch-size 8 \
+  --max-batches 8 \
+  --tail-temperature-raw 10
+```
+
+The weight will be frozen only if the temperature-10 probe removes the
+many-orders-of-magnitude gradient collapse on informative batches.
 
 ## Stage B: controlled training
 

@@ -1,0 +1,12 @@
+{
+  "decision": "reject_temperature_before_training",
+  "median_gradient_cosine": -0.0009107086303767325,
+  "nominal_recommended_weight": 0.00011019637413937054,
+  "observed_suggested_weight_max": 10944339557.981972,
+  "observed_suggested_weight_min": 0.000045320178664815865,
+  "reason": "temperature 2 produces saturated tail gradients and a bimodal, unusable weight estimate",
+  "tail_gradient_norm_max": 0.27004873752593994,
+  "tail_gradient_norm_min": 2.6182458085054346e-16,
+  "temperature_raw": 2.0,
+  "validation_batches": 8
+}
