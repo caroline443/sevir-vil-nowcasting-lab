@@ -1,6 +1,6 @@
 # EXP-001: minimal SimVP baseline
 
-Status: running — Stage A completed
+Status: running — Stages A and layout inspection completed
 
 ## Question
 
@@ -54,6 +54,8 @@ python scripts/inspect_sevir_layout.py \
 ```
 
 Return `artifacts/local/sevir_layout.json`. Continue only when the report confirms a `vil` HDF5 dataset with one event shaped as either `[384, 384, 49]` or `[49, 384, 384]`.
+
+The layout inspection completed successfully on 2026-07-15: 20,393 VIL catalog rows, HDF5 keys `id` and `vil`, and event shape `[384, 384, 49]` with `uint8` values. See [`sevir-layout-result.json`](sevir-layout-result.json). The private absolute data root is intentionally not recorded here.
 
 Create a time-based manifest from the raw SEVIR catalog. The dates below define a development split, not a claim of exact equivalence with another paper:
 
