@@ -1,0 +1,49 @@
+{
+  "compute": {
+    "mean_train_mse": 0.005563184701750288,
+    "mean_train_objective": 0.005760556713241385,
+    "mean_train_tail_area_loss": 0.6579066716330126,
+    "peak_allocated_bytes": 8707374080,
+    "train_steps": 4000,
+    "wall_seconds": 2244.50667359
+  },
+  "decision": "advance_to_seed_1_and_2_replication",
+  "decision_rules": {
+    "high_threshold_skill": "pass: CSI improves at every lead for 160, 181 and 219; EXP-008 beats persistence at every lead for all three",
+    "low_threshold_guardrail": "pass: lead-mean CSI changes are +0.025% at 16 and +0.426% at 74",
+    "spatial_false_alarm_guardrail": "pass_with_caveat: POD and CSI rise at every severe threshold while SUCR falls; forecast areas remain far below observed areas"
+  },
+  "lead_mean_csi_by_threshold": {
+    "160": {
+      "exp007": 0.12232212448698442,
+      "exp008": 0.17203908954407235,
+      "relative_change": 0.40644294943044446
+    },
+    "181": {
+      "exp007": 0.07630663101716982,
+      "exp008": 0.12375664637763416,
+      "relative_change": 0.6218334465557465
+    },
+    "219": {
+      "exp007": 0.03659672348317957,
+      "exp008": 0.07584205003275513,
+      "relative_change": 1.0723726829701934
+    }
+  },
+  "overall": {
+    "csi_mean_exp007": 0.3088639352051488,
+    "csi_mean_exp008": 0.33823810677191074,
+    "csi_mean_relative_change": 0.0951039218847336,
+    "mse_exp007": 0.0025751428034285102,
+    "mse_exp008": 0.002592003669578844,
+    "mse_relative_change": 0.006547546073128574
+  },
+  "remaining_failure_at_60_minutes": {
+    "forecast_to_observed_area_ratio_160": 0.13201541296699615,
+    "forecast_to_observed_area_ratio_181": 0.08146404966953735,
+    "forecast_to_observed_area_ratio_219": 0.09782608695652174,
+    "mean_vil_relative_bias_exp007": 0.01754122856427398,
+    "mean_vil_relative_bias_exp008": 0.02884142409831747
+  },
+  "seed": 0
+}

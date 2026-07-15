@@ -1,6 +1,6 @@
 # EXP-008: severe-tail area calibration loss
 
-Status: `running — objective frozen; controlled training pending`
+Status: `running — seed 0 passed; seed 1/2 replication pending`
 
 ## Question
 
@@ -100,3 +100,21 @@ Advance the mechanism only if, relative to EXP-007, it satisfies all three:
 
 Failure is informative: it would show that marginal tail preservation alone is
 insufficient and motivate a representation or spatial-localization mechanism.
+
+## Seed-0 result
+
+The pre-registered seed-0 run passed all three decision rules. Relative to
+EXP-007, overall lead-averaged mCSI rose from `0.30886` to `0.33824` (+9.51%)
+while MSE increased from `0.002575` to `0.002592` (+0.65%). Lead-mean CSI gains
+were +40.6%, +62.2% and +107.2% at thresholds 160, 181 and 219. EXP-008 beat
+persistence at every lead for all three severe thresholds; EXP-007 had crossed
+below persistence at 45, 30 and 25 minutes respectively.
+
+The gain is not free. Mean SUCR decreases as POD rises, and at 60 minutes the
+forecast retains only 13.2%, 8.15% and 9.78% of observed threshold-160/181/219
+area. Mean-field positive bias also grows from 1.75% to 2.88%. The method
+therefore mitigates rather than solves severe-tail extinction, with a measurable
+false-alarm/calibration tradeoff.
+
+No mechanism parameter will be changed for seeds 1 and 2. Advancement beyond
+128×128 requires the severe-threshold gains to reproduce across both seeds.
