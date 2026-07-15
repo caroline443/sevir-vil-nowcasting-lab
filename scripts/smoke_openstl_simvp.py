@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one real-data AMP step with the pinned official OpenSTL SimVP model."""
+"""Run bounded real-data AMP steps with the pinned official OpenSTL SimVP."""
 
 from __future__ import annotations
 
@@ -34,8 +34,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--resolution", type=int, default=128)
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--workers", type=int, default=0)
+    parser.add_argument("--steps", type=int, default=1)
     parser.add_argument("--no-amp", action="store_true")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.steps < 1:
+        parser.error("--steps must be positive")
+    return args
 
 
 def load_official_simvp_module() -> ModuleType:
@@ -136,20 +140,24 @@ def main() -> int:
     torch.cuda.reset_peak_memory_stats(device)
     torch.cuda.synchronize(device)
     start = time.perf_counter()
-    optimizer.zero_grad(set_to_none=True)
-    with torch.autocast("cuda", dtype=torch.float16, enabled=use_amp):
-        raw_predictions = model(inputs)
-        # This is exactly the aft_seq_length < pre_seq_length branch in
-        # OpenSTL's SimVP method wrapper: predict 13 frames, retain the first 12.
-        predictions = raw_predictions[:, :12]
-        loss = criterion(predictions, targets)
-    if not torch.isfinite(loss):
-        raise RuntimeError(f"non-finite loss: {float(loss.detach())}")
-    scaler.scale(loss).backward()
-    scaler.step(optimizer)
-    scaler.update()
+    losses: list[float] = []
+    for step in range(1, args.steps + 1):
+        optimizer.zero_grad(set_to_none=True)
+        with torch.autocast("cuda", dtype=torch.float16, enabled=use_amp):
+            raw_predictions = model(inputs)
+            # This is exactly the aft_seq_length < pre_seq_length branch in
+            # OpenSTL's SimVP wrapper: predict 13 frames, retain the first 12.
+            predictions = raw_predictions[:, :12]
+            loss = criterion(predictions, targets)
+        if not torch.isfinite(loss):
+            raise RuntimeError(f"non-finite loss at step {step}: {float(loss.detach())}")
+        losses.append(float(loss.detach()))
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
     torch.cuda.synchronize(device)
     elapsed = time.perf_counter() - start
+    average_step_seconds = elapsed / args.steps
     estimated_epoch_steps = math.ceil(len(dataset) / args.batch_size)
 
     result = {
@@ -163,12 +171,20 @@ def main() -> int:
         "target_shape": list(targets.shape),
         "raw_output_shape": list(raw_predictions.shape),
         "output_shape": list(predictions.shape),
-        "loss": float(loss.detach()),
+        "loss": losses[-1],
+        "initial_loss": losses[0],
+        "final_loss": losses[-1],
+        "loss_reduction_fraction": (
+            1.0 - losses[-1] / losses[0] if losses[0] != 0.0 else 0.0
+        ),
+        "loss_trace": losses,
         "parameters": sum(parameter.numel() for parameter in model.parameters()),
         "peak_allocated_bytes": torch.cuda.max_memory_allocated(device),
         "resolution": args.resolution,
-        "step_seconds": elapsed,
-        "single_step_epoch_estimate_seconds": estimated_epoch_steps * elapsed,
+        "steps": args.steps,
+        "step_seconds": average_step_seconds,
+        "total_seconds": elapsed,
+        "epoch_estimate_seconds": estimated_epoch_steps * average_step_seconds,
         "estimated_epoch_steps": estimated_epoch_steps,
         "python_version": platform.python_version(),
         "torch_version": torch.__version__,
