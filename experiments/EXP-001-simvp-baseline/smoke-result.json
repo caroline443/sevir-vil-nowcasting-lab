@@ -1,0 +1,14 @@
+{
+  "amp": true,
+  "batch_size": 2,
+  "device": "NVIDIA RTX A4000",
+  "input_shape": [2, 13, 1, 128, 128],
+  "loss": 0.43809184432029724,
+  "ok": true,
+  "output_shape": [2, 12, 1, 128, 128],
+  "parameters": 4263041,
+  "peak_allocated_bytes": 484146688,
+  "resolution": 128,
+  "step_seconds": 1.5694649500001105,
+  "torch_version": "2.8.0+cu128"
+}

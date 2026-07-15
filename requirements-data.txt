@@ -1,0 +1,4 @@
+# PyTorch is intentionally not pinned here: the A4000 machine already has
+# torch 2.8.0+cu128 installed and working.
+numpy>=1.26,<3
+h5py>=3.11,<4
