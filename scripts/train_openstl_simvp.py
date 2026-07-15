@@ -14,6 +14,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from sevir_nowcasting.data import SevirVILWindowDataset
+from sevir_nowcasting.losses import SoftExceedanceAreaLoss
 from sevir_nowcasting.metrics import LeadTimeVILMetrics
 from smoke_openstl_simvp import (
     OPENSTL_MODEL_SHA256,
@@ -36,10 +37,33 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--learning-rate", type=float, default=5e-3)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--log-every", type=int, default=50)
+    parser.add_argument(
+        "--tail-area-weight",
+        type=float,
+        default=0.0,
+        help="weight of soft severe-threshold area loss; zero reproduces baseline",
+    )
+    parser.add_argument(
+        "--tail-thresholds",
+        type=float,
+        nargs="+",
+        default=[160.0, 181.0, 219.0],
+        help="severe thresholds in raw SEVIR VIL units",
+    )
+    parser.add_argument(
+        "--tail-temperature-raw",
+        type=float,
+        default=2.0,
+        help="soft-threshold sigmoid temperature in raw VIL units",
+    )
     parser.add_argument("--no-amp", action="store_true")
     args = parser.parse_args()
     if args.epochs < 1 or args.max_train_batches < 1 or args.max_val_batches < 1:
         parser.error("epochs and maximum batch counts must be positive")
+    if args.tail_area_weight < 0:
+        parser.error("tail-area-weight must be non-negative")
+    if args.tail_temperature_raw <= 0:
+        parser.error("tail-temperature-raw must be positive")
     return args
 
 
@@ -143,14 +167,20 @@ def main() -> int:
         total_steps=total_steps,
         final_div_factor=1e4,
     )
-    criterion = nn.MSELoss()
+    mse_criterion = nn.MSELoss()
+    tail_criterion = SoftExceedanceAreaLoss(
+        thresholds_raw=args.tail_thresholds,
+        temperature_raw=args.tail_temperature_raw,
+    ).to(device)
     use_amp = not args.no_amp
     scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
 
     torch.cuda.reset_peak_memory_stats(device)
     start = time.perf_counter()
     global_step = 0
-    train_loss_sum = 0.0
+    train_objective_sum = 0.0
+    train_mse_sum = 0.0
+    train_tail_sum = 0.0
     train_log: list[dict[str, float | int]] = []
 
     for epoch in range(1, args.epochs + 1):
@@ -163,7 +193,14 @@ def main() -> int:
             optimizer.zero_grad(set_to_none=True)
             with torch.autocast("cuda", dtype=torch.float16, enabled=use_amp):
                 predictions = predict_12(model, inputs)
-                loss = criterion(predictions, targets)
+            mse_loss = mse_criterion(predictions.float(), targets.float())
+            if args.tail_area_weight > 0:
+                tail_loss = tail_criterion(predictions, targets)
+            else:
+                # Preserve the original baseline path when the auxiliary loss
+                # is disabled, including its compute and memory behavior.
+                tail_loss = mse_loss.new_zeros(())
+            loss = mse_loss + args.tail_area_weight * tail_loss
             if not torch.isfinite(loss):
                 raise RuntimeError(
                     f"non-finite loss at epoch={epoch}, batch={batch_index}: "
@@ -176,12 +213,18 @@ def main() -> int:
 
             global_step += 1
             loss_value = float(loss.detach())
-            train_loss_sum += loss_value
+            mse_value = float(mse_loss.detach())
+            tail_value = float(tail_loss.detach())
+            train_objective_sum += loss_value
+            train_mse_sum += mse_value
+            train_tail_sum += tail_value
             if global_step == 1 or global_step % args.log_every == 0:
                 entry = {
                     "step": global_step,
                     "epoch": epoch,
                     "loss": loss_value,
+                    "mse_loss": mse_value,
+                    "tail_area_loss": tail_value,
                     "learning_rate": optimizer.param_groups[0]["lr"],
                 }
                 train_log.append(entry)
@@ -203,7 +246,9 @@ def main() -> int:
         "wall_seconds": elapsed,
         "train_steps": global_step,
         "train_samples": global_step * args.batch_size,
-        "mean_train_mse": train_loss_sum / global_step,
+        "mean_train_objective": train_objective_sum / global_step,
+        "mean_train_mse": train_mse_sum / global_step,
+        "mean_train_tail_area_loss": train_tail_sum / global_step,
         "validation_batches": val_batches,
         "validation_samples_upper_bound": val_batches * args.batch_size,
         "scheduler": "OneCycleLR",

@@ -32,6 +32,10 @@ At minimum:
 
 Do not compare scores when the split, resolution, input/output length or threshold implementation differs.
 
+EXP-008 is the first mechanism experiment. It tests soft severe-threshold area
+calibration against the fixed EXP-007 diagnostic baseline and chooses its loss
+weight from a frozen-checkpoint gradient-scale probe rather than a metric sweep.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;
@@ -39,4 +43,3 @@ Do not compare scores when the split, resolution, input/output length or thresho
 - `completed`: outputs and interpretation recorded;
 - `stopped`: stop condition met; negative result retained;
 - `invalid`: execution or data error makes results unusable.
-
