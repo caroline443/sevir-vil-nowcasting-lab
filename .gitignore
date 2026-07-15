@@ -1,0 +1,27 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+.env
+
+# Data and model artifacts must stay outside Git.
+data/
+datasets/
+checkpoints/
+weights/
+runs/
+wandb/
+*.ckpt
+*.pt
+*.pth
+*.h5
+*.hdf5
+
+# Local machine reports may contain host-specific paths.
+artifacts/local/
+

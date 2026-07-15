@@ -1,0 +1,2 @@
+experiment_id,status,git_commit,dataset_split,resolution,input_length,output_length,seed,gpu,peak_memory_mb,train_hours,inference_ms,mse,csi_mean,csi_181,csi_219,pod_219,far_219,notes
+
