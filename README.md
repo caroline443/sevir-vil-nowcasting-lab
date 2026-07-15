@@ -13,7 +13,8 @@ This repository is deliberately **problem-first**. A model change is added only 
 - EXP-002: pinned official OpenSTL SimVP compatibility gate passed.
 - EXP-003: native 384×384 memory passed; ordinary long training rejected by runtime.
 - EXP-004: native-resolution one-sample learnability gate passed.
-- EXP-005: short official-SimVP lead-time diagnostic baseline ready to run.
+- EXP-005: candidate lead-time-dependent intensity collapse identified.
+- EXP-006: persistence control for the candidate problem ready to run.
 
 ## Repository layout
 
@@ -53,6 +54,7 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [EXP-003: native-resolution OpenSTL SimVP gate](experiments/EXP-003-openstl-384-gate/README.md)
 - [EXP-004: one-sample overfit and throughput gate](experiments/EXP-004-overfit-throughput/README.md)
 - [EXP-005: short lead-time diagnostic baseline](experiments/EXP-005-short-diagnostic-baseline/README.md)
+- [EXP-006: persistence control](experiments/EXP-006-persistence-control/README.md)
 
 ## Implementation references
 
