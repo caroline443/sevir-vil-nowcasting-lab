@@ -1,6 +1,6 @@
 # EXP-000: A4000 environment audit
 
-Status: planned
+Status: completed
 
 ## Question
 
@@ -40,6 +40,8 @@ Share the JSON after checking the optional `platform` field and any paths shown 
 - CUDA availability and CUDA runtime recorded;
 - GPU model and total memory recorded;
 - optional matrix multiplication succeeds.
+
+The A4000 report collected on 2026-07-15 satisfies all success conditions. See [`result.json`](result.json).
 
 ## Stop condition
 

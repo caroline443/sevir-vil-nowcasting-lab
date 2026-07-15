@@ -44,3 +44,8 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [Problem-first roadmap](docs/problem-first-roadmap.md)
 - [Experiment protocol](experiments/README.md)
 - [EXP-000: A4000 environment audit](experiments/EXP-000-environment/README.md)
+- [EXP-001: minimal SimVP baseline](experiments/EXP-001-simvp-baseline/README.md)
+
+## Implementation references
+
+The local baseline is a compact, dependency-light implementation of the SimVP design for the asymmetric SEVIR task (13 input frames to 12 output frames). It is intended for controlled experiments, not as a claim of bit-for-bit equivalence with OpenSTL. Method and dataset protocol decisions are checked against the official [OpenSTL](https://github.com/chengtan9907/OpenSTL) and [Earthformer](https://github.com/amazon-science/earth-forecasting-transformer) repositories.
