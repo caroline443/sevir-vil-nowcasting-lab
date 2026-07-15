@@ -1,6 +1,6 @@
 # EXP-001: minimal SimVP baseline
 
-Status: running — Stages A and layout inspection completed
+Status: completed — infrastructure validated
 
 ## Question
 
@@ -90,6 +90,14 @@ PYTHONPATH=src python -m sevir_nowcasting.train \
 - loss is finite;
 - `metrics.csv`, `summary.json` and `last.pt` are written;
 - peak memory and wall time are recorded.
+
+Stage C completed successfully on 2026-07-15. The 100-batch training plus 20-batch validation run finished in 7.41 seconds with approximately 498 MiB peak allocated GPU memory. See [`train100-summary.json`](train100-summary.json) and [`train100-metrics.csv`](train100-metrics.csv).
+
+The high-threshold scores after only 100 optimization steps are not scientific baseline results. In particular, `CSI-219=0` is recorded as an expected unconverged-pipeline outcome, not evidence for or against a research hypothesis.
+
+## Outcome
+
+EXP-001 establishes that the data reader, 13→12 tensor path, compact SimVP-style model, mixed-precision training, validation metrics and artifact writing all run safely on the A4000. The local model remains an infrastructure baseline and must not be presented as an official OpenSTL SimVP reproduction.
 
 ## Stage C stop condition
 
