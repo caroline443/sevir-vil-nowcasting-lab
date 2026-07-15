@@ -1,6 +1,6 @@
 # EXP-002: pinned official OpenSTL SimVP compatibility gate
 
-Status: ready for A4000 execution
+Status: completed — compatibility gate passed
 
 ## Question
 
@@ -55,6 +55,8 @@ PYTHONPATH=src python scripts/smoke_openstl_simvp.py \
 
 Return `artifacts/local/exp002_openstl_128.json`. Do not start full training yet.
 
+The A4000 run completed successfully on 2026-07-15. The pinned upstream source hash matched, one real-data AMP optimization step took 0.94 seconds, and peak allocated GPU memory was approximately 1.06 GiB. See [`result.json`](result.json).
+
 ## Success condition
 
 - raw official output is `[1, 13, 1, 128, 128]` and the protocol output is `[1, 12, 1, 128, 128]`;
@@ -67,3 +69,7 @@ Return `artifacts/local/exp002_openstl_128.json`. Do not start full training yet
 - If installation or import fails, return the complete error; do not downgrade PyTorch or CUDA.
 - If the step exceeds 12 GiB or raises OOM, do not shrink the official architecture. The next gate will use activation checkpointing or spatial tiling at 384×384.
 - A successful 128×128 step authorizes only a later 384×384 memory probe, not a multi-epoch training run.
+
+## Outcome
+
+Python 3.12.13, PyTorch 2.8.0+cu128, TorchVision 0.23.0+cu128 and the pinned OpenSTL SimVP source are compatible on the laboratory A4000. EXP-002 authorizes EXP-003's single-step native-resolution probe. The initial loss is recorded only as a finite-value check and has no forecasting significance.
