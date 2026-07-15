@@ -6,7 +6,13 @@ from __future__ import annotations
 import argparse
 import json
 import statistics
+import sys
 from pathlib import Path
+
+# Editable installs become stale if a WSL repository is moved.  Resolve the
+# in-repository package directly so the documented root-level command is robust.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import torch
 from torch import nn
