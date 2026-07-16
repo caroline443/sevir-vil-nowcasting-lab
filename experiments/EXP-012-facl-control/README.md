@@ -1,6 +1,6 @@
 # EXP-012: FACL closest-loss control
 
-Status: `running` — 100-update smoke passed; 4000-update gate pending
+Status: `completed`
 
 ## Question
 
@@ -91,3 +91,21 @@ python scripts/train_openstl_simvp.py \
   severe-tail component, while FACL remains the sharpness/distribution baseline.
 - A combination experiment is not automatic; it requires evidence that their
   gradient directions and error corrections are complementary.
+
+## Final result
+
+The 4000-update FACL arm was numerically valid: all optimizer updates completed,
+with zero BF16 fallbacks/skips and 1830 FCL versus 2170 FAL selections.
+
+Under the frozen development protocol:
+
+- FACL mean CSI was 0.30571, 1.02% below MSE;
+- FACL MSE was 0.003234, 25.60% above MSE;
+- tail area exceeded FACL by 10.64% mean CSI and had 19.86% lower MSE;
+- tail-area CSI gains over FACL increased from 7.29% at threshold 133 to
+  21.59%, 41.21% and 340.08% at 160, 181 and 219.
+
+Tail area therefore survives the bounded FACL gate. This is not a claim of
+beating the published 50-epoch native-resolution FACL result. The next gate
+diagnoses whether tail-area false alarms are near-miss displacement or remote
+hallucination before adding any spatial loss.

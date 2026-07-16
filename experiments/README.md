@@ -44,6 +44,10 @@ EXP-012 is the second mandatory closest-loss gate. It implements the official
 NeurIPS 2024 FACL schedule and required sigmoid output, beginning with a
 100-update numerical smoke test before any full diagnostic run.
 
+EXP-013 diagnoses whether the remaining tail-area precision cost comes from
+small spatial displacement or remote hallucination. It is read-only checkpoint
+evaluation and gates the design of any second method component.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;

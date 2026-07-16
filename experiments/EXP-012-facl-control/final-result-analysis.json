@@ -1,0 +1,78 @@
+{
+  "decision": "tail_area_outperforms_facl_in_frozen_development_gate",
+  "protocol": {
+    "resolution": 128,
+    "seed": 0,
+    "train_updates": 4000,
+    "validation_batches": 200,
+    "amp_dtype": "bfloat16",
+    "facl_constant_ratio": 0.1
+  },
+  "numerical_validity": {
+    "optimizer_updates": 4000,
+    "amp_fp32_fallbacks": 0,
+    "skipped_optimizer_updates": 0,
+    "facl_term_counts": {
+      "fal": 2170,
+      "fcl": 1830
+    }
+  },
+  "overall": {
+    "baseline": {
+      "csi_mean": 0.3088639352051488,
+      "mse": 0.0025751428034285102
+    },
+    "facl": {
+      "csi_mean": 0.305714651063077,
+      "csi_relative_to_baseline": -0.010196347916049397,
+      "mse": 0.003234483223177449,
+      "mse_relative_to_baseline": 0.2560403325481997
+    },
+    "tail_area": {
+      "csi_mean": 0.33823810677191074,
+      "mse": 0.002592003669578844,
+      "csi_relative_to_facl": 0.10638500835906384,
+      "mse_relative_to_facl": -0.1986343750354823
+    }
+  },
+  "lead_mean_csi": {
+    "16": {
+      "facl": 0.722424003,
+      "tail_area": 0.742249167,
+      "tail_area_relative_to_facl": 0.027442561
+    },
+    "74": {
+      "facl": 0.579225933,
+      "tail_area": 0.608401842,
+      "tail_area_relative_to_facl": 0.050370516
+    },
+    "133": {
+      "facl": 0.286277746,
+      "tail_area": 0.307139845,
+      "tail_area_relative_to_facl": 0.072873633
+    },
+    "160": {
+      "facl": 0.141488914,
+      "tail_area": 0.172039090,
+      "tail_area_relative_to_facl": 0.215919218
+    },
+    "181": {
+      "facl": 0.087637596,
+      "tail_area": 0.123756646,
+      "tail_area_relative_to_facl": 0.412141038
+    },
+    "219": {
+      "facl": 0.017233715,
+      "tail_area": 0.075842050,
+      "tail_area_relative_to_facl": 3.400795313
+    }
+  },
+  "interpretation": [
+    "FACL is numerically valid but underperforms MSE in mean CSI and incurs a 25.60-percent MSE increase under the frozen 4000-update development protocol.",
+    "Tail area exceeds FACL at every threshold, with its advantage increasing through the severe tail, and has 19.86-percent lower MSE than FACL.",
+    "This result supports the competitiveness of the tail-selective component within the bounded protocol.",
+    "It is not a reproduction or refutation of the published 50-epoch native-resolution FACL result because optimizer, scheduler, resolution and training duration differ.",
+    "The next problem is to determine whether the tail-area SUCR loss is caused by near-miss displacement or remote hallucination before designing a spatial regularizer."
+  ]
+}
+
