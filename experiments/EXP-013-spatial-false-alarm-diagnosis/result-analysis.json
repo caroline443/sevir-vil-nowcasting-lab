@@ -1,0 +1,64 @@
+{
+  "experiment": "EXP-013",
+  "status": "completed",
+  "checkpoint": "artifacts/local/exp010_bf16_tail_area_seed0/last.pt",
+  "resolution": 128,
+  "validation_batches": 200,
+  "radii_pixels": [0, 1, 2, 4, 8],
+  "summary_by_threshold": {
+    "160": {
+      "mean_tolerant_precision_r0": 0.4680911789220032,
+      "mean_tolerant_precision_r2": 0.8681341458087352,
+      "mean_tolerant_precision_r4": 0.9457455538479169,
+      "mean_tolerant_precision_r8": 0.9804284711629604,
+      "mean_tolerant_recall_r8": 0.5716675819199285,
+      "minute_60_tolerant_precision_r8": 0.9392082363034686,
+      "minute_60_tolerant_recall_r8": 0.28808845702797786,
+      "minute_60_forecast_pixels": 8159,
+      "minute_60_observed_pixels": 59690,
+      "minute_60_forecast_to_observed_area_ratio": 0.1366895627408276
+    },
+    "181": {
+      "mean_tolerant_precision_r0": 0.39166333852519136,
+      "mean_tolerant_precision_r2": 0.8131891085947759,
+      "mean_tolerant_precision_r4": 0.9026181645861291,
+      "mean_tolerant_precision_r8": 0.9429857988731088,
+      "mean_tolerant_recall_r8": 0.4830355347048825,
+      "minute_60_tolerant_precision_r8": 0.8218015665796344,
+      "minute_60_tolerant_recall_r8": 0.17133987582615662,
+      "minute_60_forecast_pixels": 1532,
+      "minute_60_observed_pixels": 19972,
+      "minute_60_forecast_to_observed_area_ratio": 0.07670739034648508
+    },
+    "219": {
+      "mean_tolerant_precision_r0": 0.23110593404691496,
+      "mean_tolerant_precision_r2": 0.6229591743241,
+      "mean_tolerant_precision_r4": 0.7641697609067633,
+      "mean_tolerant_precision_r8": 0.8190680032886511,
+      "mean_tolerant_recall_r8": 0.30517718276998723,
+      "minute_60_tolerant_precision_r8": 0.5849056603773585,
+      "minute_60_tolerant_recall_r8": 0.13043478260869565,
+      "minute_60_forecast_pixels": 159,
+      "minute_60_observed_pixels": 2116,
+      "minute_60_forecast_to_observed_area_ratio": 0.07514177693761814
+    }
+  },
+  "hypothesis_test": {
+    "remote_hallucination_is_dominant_at_160_181": "rejected",
+    "small_displacement_is_a_major_source_of_pixelwise_false_alarms": "supported",
+    "severe_mass_extinction_remains_dominant_at_long_lead": "supported",
+    "threshold_219_has_residual_large_displacement_or_remote_error": "supported"
+  },
+  "method_decision": {
+    "pure_false_alarm_penalty": "reject",
+    "plain_fss_loss_as_main_novelty": "reject_as_insufficiently_novel",
+    "retain_soft_exceedance_area_loss": "yes_as_component_one",
+    "next_target": "displacement-tolerant severe-mass localization without suppressing forecast mass",
+    "evaluation_addition": "report neighborhood-tolerant skill alongside pixelwise CSI, POD and SUCR"
+  },
+  "limitations": [
+    "The diagnosis uses one tail-area checkpoint and one seed.",
+    "Pixel radii at 128 resolution must not be interpreted as native-resolution distances without an explicit mapping.",
+    "Mask dilation separates near from remote errors but does not identify storm objects or motion vectors."
+  ]
+}
