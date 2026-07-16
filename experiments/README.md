@@ -40,6 +40,10 @@ EXP-011 is a mandatory novelty gate introduced after the literature audit. It
 reproduces the 2025 Probability-Matching loss under the frozen 128² protocol
 before any native-resolution scaling.
 
+EXP-012 is the second mandatory closest-loss gate. It implements the official
+NeurIPS 2024 FACL schedule and required sigmoid output, beginning with a
+100-update numerical smoke test before any full diagnostic run.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;

@@ -19,7 +19,11 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from sevir_nowcasting.data import SevirVILWindowDataset
-from sevir_nowcasting.losses import ProbabilityMatchingLoss, SoftExceedanceAreaLoss
+from sevir_nowcasting.losses import (
+    FourierAmplitudeCorrelationLoss,
+    ProbabilityMatchingLoss,
+    SoftExceedanceAreaLoss,
+)
 from sevir_nowcasting.metrics import LeadTimeVILMetrics
 from smoke_openstl_simvp import (
     OPENSTL_MODEL_SHA256,
@@ -68,6 +72,18 @@ def parse_args() -> argparse.Namespace:
         help="weight of the Cao et al. (2025) sorted-field PM constraint",
     )
     parser.add_argument(
+        "--training-loss",
+        choices=("mse", "facl"),
+        default="mse",
+        help="primary training objective; FACL follows Yan et al. (2024)",
+    )
+    parser.add_argument(
+        "--facl-constant-ratio",
+        type=float,
+        default=0.1,
+        help="final fraction of FACL updates that always select amplitude loss",
+    )
+    parser.add_argument(
         "--amp-dtype",
         choices=("float16", "bfloat16"),
         default="float16",
@@ -87,6 +103,12 @@ def parse_args() -> argparse.Namespace:
         parser.error(
             "closest-loss controls must enable either tail area or probability matching, not both"
         )
+    if not 0 <= args.facl_constant_ratio < 1:
+        parser.error("facl-constant-ratio must be in [0, 1)")
+    if args.training_loss == "facl" and (
+        args.tail_area_weight > 0 or args.probability_matching_weight > 0
+    ):
+        parser.error("FACL closest-loss control cannot be combined with auxiliaries")
     return args
 
 
@@ -152,16 +174,24 @@ def compute_training_objective(
     tail_area_weight: float,
     probability_matching_criterion: nn.Module,
     probability_matching_weight: float,
+    facl_criterion: nn.Module,
+    training_loss: str,
     *,
     autocast_enabled: bool,
     autocast_dtype: torch.dtype,
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """Compute the objective, optionally using an AMP model forward."""
     with torch.autocast(
         "cuda", dtype=autocast_dtype, enabled=autocast_enabled
     ):
         predictions = predict_12(model, inputs)
+        if training_loss == "facl":
+            predictions = torch.sigmoid(predictions)
     mse_loss = mse_criterion(predictions.float(), targets.float())
+    if training_loss == "facl":
+        facl_loss = facl_criterion(predictions, targets)
+    else:
+        facl_loss = mse_loss.new_zeros(())
     if tail_area_weight > 0:
         tail_loss = tail_criterion(predictions, targets)
     else:
@@ -173,12 +203,15 @@ def compute_training_objective(
         )
     else:
         probability_matching_loss = mse_loss.new_zeros(())
-    loss = (
-        mse_loss
-        + tail_area_weight * tail_loss
-        + probability_matching_weight * probability_matching_loss
-    )
-    return loss, mse_loss, tail_loss, probability_matching_loss
+    if training_loss == "facl":
+        loss = facl_loss
+    else:
+        loss = (
+            mse_loss
+            + tail_area_weight * tail_loss
+            + probability_matching_weight * probability_matching_loss
+        )
+    return loss, mse_loss, tail_loss, probability_matching_loss, facl_loss
 
 
 @torch.no_grad()
@@ -189,6 +222,7 @@ def evaluate(
     max_batches: int,
     use_amp: bool,
     amp_dtype: torch.dtype,
+    output_sigmoid: bool,
 ) -> tuple[dict[str, object], int]:
     model.eval()
     metrics = LeadTimeVILMetrics(output_length=12)
@@ -200,6 +234,8 @@ def evaluate(
         targets = batch["targets"].to(device, non_blocking=True)
         with torch.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
             predictions = predict_12(model, inputs)
+            if output_sigmoid:
+                predictions = torch.sigmoid(predictions)
         metrics.update(predictions, targets)
         completed += 1
     return metrics.compute(), completed
@@ -244,6 +280,10 @@ def main() -> int:
         temperature_raw=args.tail_temperature_raw,
     ).to(device)
     probability_matching_criterion = ProbabilityMatchingLoss().to(device)
+    facl_criterion = FourierAmplitudeCorrelationLoss(
+        total_steps=total_steps,
+        constant_ratio=args.facl_constant_ratio,
+    ).to(device)
     use_amp = not args.no_amp
     use_grad_scaler = use_amp and amp_dtype == torch.float16
     scaler = torch.amp.GradScaler("cuda", enabled=use_grad_scaler)
@@ -255,10 +295,12 @@ def main() -> int:
     train_mse_sum = 0.0
     train_tail_sum = 0.0
     train_probability_matching_sum = 0.0
+    train_facl_sum = 0.0
+    facl_term_counts = {"fcl": 0, "fal": 0}
     amp_fp32_fallbacks = 0
     skipped_optimizer_updates = 0
     optimizer_updates = 0
-    train_log: list[dict[str, float | int]] = []
+    train_log: list[dict[str, object]] = []
 
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -273,6 +315,7 @@ def main() -> int:
                 mse_loss,
                 tail_loss,
                 probability_matching_loss,
+                facl_loss,
             ) = compute_training_objective(
                 model,
                 inputs,
@@ -282,6 +325,8 @@ def main() -> int:
                 args.tail_area_weight,
                 probability_matching_criterion,
                 args.probability_matching_weight,
+                facl_criterion,
+                args.training_loss,
                 autocast_enabled=use_amp,
                 autocast_dtype=amp_dtype,
             )
@@ -294,6 +339,7 @@ def main() -> int:
                     mse_loss,
                     tail_loss,
                     probability_matching_loss,
+                    facl_loss,
                 ) = compute_training_objective(
                     model,
                     inputs,
@@ -303,6 +349,8 @@ def main() -> int:
                     args.tail_area_weight,
                     probability_matching_criterion,
                     args.probability_matching_weight,
+                    facl_criterion,
+                    args.training_loss,
                     autocast_enabled=False,
                     autocast_dtype=amp_dtype,
                 )
@@ -333,10 +381,14 @@ def main() -> int:
             mse_value = float(mse_loss.detach())
             tail_value = float(tail_loss.detach())
             probability_matching_value = float(probability_matching_loss.detach())
+            facl_value = float(facl_loss.detach())
             train_objective_sum += loss_value
             train_mse_sum += mse_value
             train_tail_sum += tail_value
             train_probability_matching_sum += probability_matching_value
+            train_facl_sum += facl_value
+            if args.training_loss == "facl":
+                facl_term_counts[facl_criterion.last_term] += 1
             if global_step == 1 or global_step % args.log_every == 0:
                 entry = {
                     "step": global_step,
@@ -345,6 +397,12 @@ def main() -> int:
                     "mse_loss": mse_value,
                     "tail_area_loss": tail_value,
                     "probability_matching_loss": probability_matching_value,
+                    "facl_loss": facl_value,
+                    "facl_term": (
+                        facl_criterion.last_term
+                        if args.training_loss == "facl"
+                        else "disabled"
+                    ),
                     "learning_rate": optimizer.param_groups[0]["lr"],
                     "used_fp32_fallback": used_fp32_fallback,
                     "optimizer_step_skipped": optimizer_step_skipped,
@@ -353,7 +411,13 @@ def main() -> int:
                 print(json.dumps(entry, sort_keys=True))
 
     validation, val_batches = evaluate(
-        model, val_loader, device, args.max_val_batches, use_amp, amp_dtype
+        model,
+        val_loader,
+        device,
+        args.max_val_batches,
+        use_amp,
+        amp_dtype,
+        args.training_loss == "facl",
     )
     torch.cuda.synchronize(device)
     elapsed = time.perf_counter() - start
@@ -379,6 +443,8 @@ def main() -> int:
         "mean_train_probability_matching_loss": (
             train_probability_matching_sum / global_step
         ),
+        "mean_train_facl_loss": train_facl_sum / global_step,
+        "facl_term_counts": facl_term_counts,
         "validation_batches": val_batches,
         "validation_samples_upper_bound": val_batches * args.batch_size,
         "scheduler": "OneCycleLR",

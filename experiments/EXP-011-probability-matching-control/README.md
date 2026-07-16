@@ -1,6 +1,6 @@
 # EXP-011: probability-matching closest-loss control
 
-Status: `running` — published-weight arm completed; protocol-matched weight pending
+Status: `completed`
 
 ## Question
 
@@ -131,3 +131,20 @@ python scripts/train_openstl_simvp.py \
 This is the last full PM run in the development gate. If it underperforms tail
 area, no further PM weight sweep or extra PM seeds will be run before the method
 direction is reconsidered.
+
+## Final decision
+
+The gradient-matched PM arm was valid and improved mean CSI over MSE by 3.11%
+with a 1.11% MSE increase. Tail area improved mean CSI by 9.51% with a 0.65%
+MSE increase. Relative to PM, tail area achieved:
+
+- +6.21% mean CSI and -0.45% MSE;
+- +5.37%, +23.11%, +45.27% and +87.96% lead-mean CSI at thresholds 133,
+  160, 181 and 219;
+- nearly unchanged low-threshold CSI (about -0.25% at both 16 and 74).
+
+The closest-loss gate therefore retains SoftExceedanceAreaLoss as a
+tail-selective component. It does not establish a standalone paper contribution.
+Tail area loses more SUCR than PM at 160 and 181, making spatial false-alarm
+control the next problem. FACL remains a required closest loss baseline before
+native-resolution scaling.

@@ -1,0 +1,114 @@
+{
+  "decision": "tail_area_survives_probability_matching_closest_loss_gate_as_a_component",
+  "protocol": {
+    "resolution": 128,
+    "seed": 0,
+    "train_updates": 4000,
+    "validation_batches": 200,
+    "amp_dtype": "bfloat16",
+    "probability_matching_weight": 0.25,
+    "tail_area_weight": 0.0003
+  },
+  "numerical_validity": {
+    "probability_matching_optimizer_updates": 4000,
+    "probability_matching_amp_fp32_fallbacks": 0,
+    "probability_matching_skipped_optimizer_updates": 0
+  },
+  "overall": {
+    "baseline": {
+      "csi_mean": 0.3088639352051488,
+      "mse": 0.0025751428034285102
+    },
+    "probability_matching": {
+      "csi_mean": 0.3184640375597051,
+      "csi_relative_to_baseline": 0.03108197902153864,
+      "mse": 0.002603602134075421,
+      "mse_relative_to_baseline": 0.011051554348372461
+    },
+    "tail_area": {
+      "csi_mean": 0.33823810677191074,
+      "csi_relative_to_baseline": 0.0951039218847336,
+      "mse": 0.002592003669578844,
+      "mse_relative_to_baseline": 0.006547546073128574,
+      "csi_relative_to_probability_matching": 0.06209200060304587,
+      "mse_relative_to_probability_matching": -0.004454776075337508
+    }
+  },
+  "lead_mean_csi_relative_change": {
+    "16": {
+      "probability_matching_vs_baseline": 0.002746,
+      "tail_area_vs_baseline": 0.000249,
+      "tail_area_vs_probability_matching": -0.002490
+    },
+    "74": {
+      "probability_matching_vs_baseline": 0.006750,
+      "tail_area_vs_baseline": 0.004263,
+      "tail_area_vs_probability_matching": -0.002470
+    },
+    "133": {
+      "probability_matching_vs_baseline": 0.079304,
+      "tail_area_vs_baseline": 0.137242,
+      "tail_area_vs_probability_matching": 0.053681
+    },
+    "160": {
+      "probability_matching_vs_baseline": 0.142388,
+      "tail_area_vs_baseline": 0.406443,
+      "tail_area_vs_probability_matching": 0.231143
+    },
+    "181": {
+      "probability_matching_vs_baseline": 0.116448,
+      "tail_area_vs_baseline": 0.621833,
+      "tail_area_vs_probability_matching": 0.452672
+    },
+    "219": {
+      "probability_matching_vs_baseline": 0.102549,
+      "tail_area_vs_baseline": 1.072373,
+      "tail_area_vs_probability_matching": 0.879620
+    }
+  },
+  "precision_recall_tradeoff_relative_to_baseline": {
+    "160": {
+      "probability_matching_pod": 0.172918,
+      "probability_matching_sucr": -0.104517,
+      "tail_area_pod": 0.543061,
+      "tail_area_sucr": -0.231310
+    },
+    "181": {
+      "probability_matching_pod": 0.132825,
+      "probability_matching_sucr": -0.144029,
+      "tail_area_pod": 0.784366,
+      "tail_area_sucr": -0.354355
+    },
+    "219": {
+      "probability_matching_pod": 0.120101,
+      "probability_matching_sucr": 0.182839,
+      "tail_area_pod": 1.431948,
+      "tail_area_sucr": -0.105155
+    }
+  },
+  "sixty_minute_forecast_to_observed_area_ratio": {
+    "baseline": {
+      "160": 0.007539,
+      "181": 0.000250,
+      "219": 0.0
+    },
+    "probability_matching": {
+      "160": 0.043140,
+      "181": 0.006309,
+      "219": 0.0
+    },
+    "tail_area": {
+      "160": 0.132015,
+      "181": 0.081464,
+      "219": 0.097826
+    }
+  },
+  "interpretation": [
+    "At matched auxiliary-gradient scale, PM is a valid improvement over MSE but is substantially less selective for severe thresholds than tail-area matching.",
+    "Tail-area matching improves overall CSI by 6.21 percent relative to PM while also reducing MSE by 0.45 percent relative to PM.",
+    "The advantage grows monotonically through the severe tail, supporting a tail-specific mechanism rather than an undifferentiated distribution-matching effect.",
+    "Tail area nevertheless pays a larger SUCR cost at thresholds 160 and 181; controlling spatial false alarms is the next research problem.",
+    "This gate retains SoftExceedanceAreaLoss as a candidate component, not as a sufficient standalone paper contribution. FACL and a spatial-reliability mechanism remain required."
+  ]
+}
+
