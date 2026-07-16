@@ -1,6 +1,6 @@
 # EXP-015: severe-trajectory distribution gate
 
-Status: `planned`
+Status: `completed`
 
 ## Question
 
@@ -53,3 +53,31 @@ python scripts/diagnose_severe_trajectory_distribution.py \
   investigate representation/output calibration instead.
 - Any sampler must preserve the official validation distribution and use
   importance-aware reporting so gains are not created by changing evaluation.
+
+## Result
+
+The full 35,718-sample training split rejects sequence-level rarity as the
+dominant explanation. At 60 minutes, 69.85%, 59.55% and 38.00% of samples
+remain active at thresholds 160, 181 and 219. Persistence from the last input
+to 60 minutes occurs in 66.29%, 55.57% and 33.53% of all samples. Persistent
+growth is also not exceptionally rare: it occurs in 19.26%, 16.75% and 11.32%
+of all samples.
+
+The imbalance is instead spatial. Conditional on an active 60-minute target,
+the median severe areas are 116, 58 and 14 pixels at the three thresholds,
+equal to only 0.708%, 0.354% and 0.085% of a 128² frame.
+
+## Decision
+
+- Reject general trajectory-balanced sampling as component two. Uniform
+  minibatches already see persistent and growing severe sequences frequently.
+- Do not conflate storm-enriched SEVIR sequence frequency with severe-pixel
+  balance inside each frame.
+- Retain late initiation as a possible subgroup analysis, not the main method:
+  only 3.56%--4.48% of samples are inactive in the last input but active at 60
+  minutes.
+- The next gate tests pixel-level tail-gradient saturation by lead time. A
+  lead-adaptive soft-threshold continuation is authorized only if the fixed
+  temperature loses useful upward gradient at long leads.
+
+See `result-analysis.json` for the recorded statistics.

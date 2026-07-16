@@ -1,0 +1,49 @@
+{
+  "experiment": "EXP-015",
+  "status": "completed",
+  "split": "train",
+  "resolution": 128,
+  "sample_count": 35718,
+  "completed_batches": 2233,
+  "summary_by_threshold": {
+    "160": {
+      "minute_60_active_fraction": 0.698499356066969,
+      "persistent_to_60_fraction": 0.6628590626574836,
+      "growth_to_60_overall_fraction": 0.19264796461168038,
+      "late_initiation_60_fraction": 0.035640293409485414,
+      "median_minute_60_area_pixels_given_active": 116,
+      "median_minute_60_pixel_fraction_given_active": 0.007080078125
+    },
+    "181": {
+      "minute_60_active_fraction": 0.5954980682009071,
+      "persistent_to_60_fraction": 0.5557142057226049,
+      "growth_to_60_overall_fraction": 0.16747858222744835,
+      "late_initiation_60_fraction": 0.039783862478302255,
+      "median_minute_60_area_pixels_given_active": 58,
+      "median_minute_60_pixel_fraction_given_active": 0.0035400390625
+    },
+    "219": {
+      "minute_60_active_fraction": 0.3800324766224313,
+      "persistent_to_60_fraction": 0.3352651324262277,
+      "growth_to_60_overall_fraction": 0.11324822218489278,
+      "late_initiation_60_fraction": 0.044767344196203596,
+      "median_minute_60_area_pixels_given_active": 14,
+      "median_minute_60_pixel_fraction_given_active": 0.0008544921875
+    }
+  },
+  "hypothesis_test": {
+    "persistent_or_growing_sequences_are_too_rare_for_uniform_sampling": "rejected",
+    "severe_pixels_are_spatially_sparse_within_active_frames": "supported",
+    "late_initiation_is_a_rare_subgroup": "supported"
+  },
+  "decision": {
+    "general_trajectory_balanced_sampling": "rejected_as_component_two",
+    "late_initiation_balancing": "retain_only_as_possible_subgroup_analysis",
+    "next_problem_gate": "measure tail-gradient saturation by threshold and lead time before testing adaptive temperature"
+  },
+  "caveats": [
+    "SEVIR is storm-event enriched; these fractions do not represent climatological event frequencies.",
+    "Endpoint categories measure threshold presence and area, not storm-object identity.",
+    "Statistics are computed after resizing to 128 by the working data pipeline."
+  ]
+}

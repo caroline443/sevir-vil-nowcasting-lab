@@ -58,6 +58,10 @@ EXP-015 measures the train-split frequency of severe initiation, extinction,
 persistence and area growth. It gates any trajectory-balanced sampling or
 curriculum component before additional model training is authorized.
 
+EXP-016 probes tail-area gradient support by lead and soft-threshold
+temperature. It gates a possible lead-adaptive continuation component after
+EXP-015 rejects general trajectory-balanced sampling.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;
