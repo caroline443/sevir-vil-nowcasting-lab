@@ -1,5 +1,12 @@
 # Validated problem and feasible solution paths
 
+> **Status update (2026-07-16):** Path 1 passed a three-seed 128² mechanism
+> gate, but a subsequent novelty audit found critical overlap with FACL
+> (NeurIPS 2024) and Probability-Matching Loss (GRL 2025). It is no longer
+> considered a standalone paper contribution. See
+> [the tail-calibration novelty audit](novelty-audit-tail-calibration.md) and
+> EXP-011 before scaling to native resolution.
+
 ## Validated problem
 
 The working research problem is:

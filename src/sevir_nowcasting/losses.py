@@ -50,7 +50,9 @@ class SoftExceedanceAreaLoss(nn.Module):
         probabilities = torch.sigmoid((values - thresholds) / self.temperature)
         return probabilities.sum(dim=(3, 4, 5))
 
-    def forward(self, prediction: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, prediction: torch.Tensor, target: torch.Tensor
+    ) -> torch.Tensor:
         if prediction.shape != target.shape:
             raise ValueError(
                 f"prediction and target shapes differ: {tuple(prediction.shape)} "
@@ -59,3 +61,36 @@ class SoftExceedanceAreaLoss(nn.Module):
         predicted_log_area = torch.log1p(self.soft_counts(prediction))
         target_log_area = torch.log1p(self.soft_counts(target).detach())
         return F.smooth_l1_loss(predicted_log_area, target_log_area)
+
+
+class ProbabilityMatchingLoss(nn.Module):
+    """Match each forecast field's empirical intensity distribution.
+
+    This implements the probability-matching constraint from Cao et al.
+    (GRL, 2025): flatten each sample/lead field, sort forecast and target
+    intensities independently, and compute MSE between the ordered values.
+    Spatial locations are therefore ignored by this term while every
+    intensity quantile is constrained.
+    """
+
+    def forward(
+        self, prediction: torch.Tensor, target: torch.Tensor
+    ) -> torch.Tensor:
+        if prediction.shape != target.shape:
+            raise ValueError(
+                f"prediction and target shapes differ: {tuple(prediction.shape)} "
+                f"vs {tuple(target.shape)}"
+            )
+        if prediction.ndim != 5:
+            raise ValueError(
+                f"expected [B,T,C,H,W], got shape {tuple(prediction.shape)}"
+            )
+        # The published constraint is applied to each forecast/observation
+        # field. Keep sorting and the loss in FP32 under mixed precision.
+        predicted_ordered = torch.sort(
+            prediction.float().flatten(start_dim=2), dim=-1
+        ).values
+        target_ordered = torch.sort(
+            target.float().flatten(start_dim=2), dim=-1
+        ).values.detach()
+        return F.mse_loss(predicted_ordered, target_ordered)

@@ -36,6 +36,10 @@ EXP-008 is the first mechanism experiment. It tests soft severe-threshold area
 calibration against the fixed EXP-007 diagnostic baseline and chooses its loss
 weight from a frozen-checkpoint gradient-scale probe rather than a metric sweep.
 
+EXP-011 is a mandatory novelty gate introduced after the literature audit. It
+reproduces the 2025 Probability-Matching loss under the frozen 128² protocol
+before any native-resolution scaling.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;

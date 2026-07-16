@@ -21,6 +21,7 @@ Scores from different protocols must not be placed in one ranking without qualif
 | 2023 | PreDiff | Latent diffusion with knowledge alignment | 128² protocol and very expensive sampling |
 | 2024 | CasCast | Deterministic mesoscale forecast followed by probabilistic local refinement | Two-stage error propagation and training cost |
 | 2024 | DiffCast | Residual diffusion attached to deterministic backbones | Sampling remains slow; common protocol is downsampled |
+| 2024 | FACL | Fourier amplitude/correlation loss recovers sharp extremes across SimVP, ConvLSTM and Earthformer | Native-resolution closest loss baseline; can trade pixel accuracy for skill and lacks temporal regularization |
 | 2024 | LLMDiff | Frozen language-model transformer blocks in diffusion | Large compute and unclear benefit beyond capacity |
 | 2024 | Feature Fusion Transformer | Explicit spatial-temporal feature crossing | Uses a 6→18 protocol; limited comparability |
 | 2025 | AlphaPre | Frequency amplitude/phase disentanglement | Frequency interpretation is not a strict physical decomposition |
@@ -39,6 +40,18 @@ Scores from different protocols must not be placed in one ranking without qualif
 | 2026 | HARECast | Attention-response energy stability regularization | Preprint; regularization may suppress legitimately rare responses |
 | 2026 | MFC-RFNet | Multi-scale rectified flow with alignment and frequency fusion | Many interacting modules; unclear minimal cause of gains |
 | 2026 | PW-FouCast | Frequency fusion of radar and Pangu-Weather priors | Additional foundation-model data and system cost |
+| 2026 | Physics-Guided Extremity-Aware VIL LDM | Intensity-stratified optical-flow priors, top-tail latent loss and physical consistency | Large generative system; makes generic “extreme loss + physics” claims crowded |
+
+## Novelty warning for loss-based work
+
+The 2025 Probability-Matching loss sorts each predicted and observed field and
+matches their full empirical intensity distributions. The current
+SoftExceedanceAreaLoss matches a few points of the same empirical survival
+distribution and is therefore a tail-specialized close relative, not a clearly
+independent loss family. FACL already evaluates SimVP at native 384² SEVIR with
+thresholds 16, 74, 133, 160, 181 and 219. Any paper based on the present loss
+must directly compare with both methods. See
+[the detailed novelty audit](novelty-audit-tail-calibration.md).
 
 ## Repeated unresolved tensions
 
@@ -56,4 +69,3 @@ Scores from different protocols must not be placed in one ranking without qualif
 2. One recent efficient deterministic baseline if code is stable.
 3. STLDM or FlowCast inference from public weights, not training from scratch.
 4. Full-resolution evaluation only after a low-resolution hypothesis succeeds.
-

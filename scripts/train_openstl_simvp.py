@@ -19,7 +19,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from sevir_nowcasting.data import SevirVILWindowDataset
-from sevir_nowcasting.losses import SoftExceedanceAreaLoss
+from sevir_nowcasting.losses import ProbabilityMatchingLoss, SoftExceedanceAreaLoss
 from sevir_nowcasting.metrics import LeadTimeVILMetrics
 from smoke_openstl_simvp import (
     OPENSTL_MODEL_SHA256,
@@ -62,6 +62,12 @@ def parse_args() -> argparse.Namespace:
         help="soft-threshold sigmoid temperature in raw VIL units",
     )
     parser.add_argument(
+        "--probability-matching-weight",
+        type=float,
+        default=0.0,
+        help="weight of the Cao et al. (2025) sorted-field PM constraint",
+    )
+    parser.add_argument(
         "--amp-dtype",
         choices=("float16", "bfloat16"),
         default="float16",
@@ -75,6 +81,12 @@ def parse_args() -> argparse.Namespace:
         parser.error("tail-area-weight must be non-negative")
     if args.tail_temperature_raw <= 0:
         parser.error("tail-temperature-raw must be positive")
+    if args.probability_matching_weight < 0:
+        parser.error("probability-matching-weight must be non-negative")
+    if args.tail_area_weight > 0 and args.probability_matching_weight > 0:
+        parser.error(
+            "closest-loss controls must enable either tail area or probability matching, not both"
+        )
     return args
 
 
@@ -138,10 +150,12 @@ def compute_training_objective(
     mse_criterion: nn.Module,
     tail_criterion: nn.Module,
     tail_area_weight: float,
+    probability_matching_criterion: nn.Module,
+    probability_matching_weight: float,
     *,
     autocast_enabled: bool,
     autocast_dtype: torch.dtype,
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """Compute the objective, optionally using an AMP model forward."""
     with torch.autocast(
         "cuda", dtype=autocast_dtype, enabled=autocast_enabled
@@ -153,8 +167,18 @@ def compute_training_objective(
     else:
         # Preserve the baseline objective and memory behavior when disabled.
         tail_loss = mse_loss.new_zeros(())
-    loss = mse_loss + tail_area_weight * tail_loss
-    return loss, mse_loss, tail_loss
+    if probability_matching_weight > 0:
+        probability_matching_loss = probability_matching_criterion(
+            predictions, targets
+        )
+    else:
+        probability_matching_loss = mse_loss.new_zeros(())
+    loss = (
+        mse_loss
+        + tail_area_weight * tail_loss
+        + probability_matching_weight * probability_matching_loss
+    )
+    return loss, mse_loss, tail_loss, probability_matching_loss
 
 
 @torch.no_grad()
@@ -219,6 +243,7 @@ def main() -> int:
         thresholds_raw=args.tail_thresholds,
         temperature_raw=args.tail_temperature_raw,
     ).to(device)
+    probability_matching_criterion = ProbabilityMatchingLoss().to(device)
     use_amp = not args.no_amp
     use_grad_scaler = use_amp and amp_dtype == torch.float16
     scaler = torch.amp.GradScaler("cuda", enabled=use_grad_scaler)
@@ -229,6 +254,7 @@ def main() -> int:
     train_objective_sum = 0.0
     train_mse_sum = 0.0
     train_tail_sum = 0.0
+    train_probability_matching_sum = 0.0
     amp_fp32_fallbacks = 0
     skipped_optimizer_updates = 0
     optimizer_updates = 0
@@ -242,13 +268,20 @@ def main() -> int:
             inputs = batch["inputs"].to(device, non_blocking=True)
             targets = batch["targets"].to(device, non_blocking=True)
             optimizer.zero_grad(set_to_none=True)
-            loss, mse_loss, tail_loss = compute_training_objective(
+            (
+                loss,
+                mse_loss,
+                tail_loss,
+                probability_matching_loss,
+            ) = compute_training_objective(
                 model,
                 inputs,
                 targets,
                 mse_criterion,
                 tail_criterion,
                 args.tail_area_weight,
+                probability_matching_criterion,
+                args.probability_matching_weight,
                 autocast_enabled=use_amp,
                 autocast_dtype=amp_dtype,
             )
@@ -256,13 +289,20 @@ def main() -> int:
             if use_amp and not torch.isfinite(loss):
                 # A finite FP32 retry distinguishes batch-specific FP16
                 # activation overflow from genuine model divergence.
-                loss, mse_loss, tail_loss = compute_training_objective(
+                (
+                    loss,
+                    mse_loss,
+                    tail_loss,
+                    probability_matching_loss,
+                ) = compute_training_objective(
                     model,
                     inputs,
                     targets,
                     mse_criterion,
                     tail_criterion,
                     args.tail_area_weight,
+                    probability_matching_criterion,
+                    args.probability_matching_weight,
                     autocast_enabled=False,
                     autocast_dtype=amp_dtype,
                 )
@@ -292,9 +332,11 @@ def main() -> int:
             loss_value = float(loss.detach())
             mse_value = float(mse_loss.detach())
             tail_value = float(tail_loss.detach())
+            probability_matching_value = float(probability_matching_loss.detach())
             train_objective_sum += loss_value
             train_mse_sum += mse_value
             train_tail_sum += tail_value
+            train_probability_matching_sum += probability_matching_value
             if global_step == 1 or global_step % args.log_every == 0:
                 entry = {
                     "step": global_step,
@@ -302,6 +344,7 @@ def main() -> int:
                     "loss": loss_value,
                     "mse_loss": mse_value,
                     "tail_area_loss": tail_value,
+                    "probability_matching_loss": probability_matching_value,
                     "learning_rate": optimizer.param_groups[0]["lr"],
                     "used_fp32_fallback": used_fp32_fallback,
                     "optimizer_step_skipped": optimizer_step_skipped,
@@ -333,6 +376,9 @@ def main() -> int:
         "mean_train_objective": train_objective_sum / global_step,
         "mean_train_mse": train_mse_sum / global_step,
         "mean_train_tail_area_loss": train_tail_sum / global_step,
+        "mean_train_probability_matching_loss": (
+            train_probability_matching_sum / global_step
+        ),
         "validation_batches": val_batches,
         "validation_samples_upper_bound": val_batches * args.batch_size,
         "scheduler": "OneCycleLR",
