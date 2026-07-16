@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "model_type": "gSTA",
+  "resolution": 128,
+  "seed": 0,
+  "train_steps": 100,
+  "optimizer_updates": 100,
+  "skipped_optimizer_updates": 0,
+  "amp_dtype": "bfloat16",
+  "amp_fp32_fallbacks": 0,
+  "parameters": 18706497,
+  "peak_allocated_bytes": 9917962240,
+  "wall_seconds": 38.67916694399901,
+  "mean_train_mse": 0.014170397360576317,
+  "validation_batches": 20,
+  "decision": "authorize_seed0_4000_update_baseline_tail_pair",
+  "metric_caveat": "100-update validation metrics are numerical smoke outputs, not method evidence"
+}

@@ -1,6 +1,6 @@
 # EXP-017: gSTA transfer gate
 
-Status: `planned`
+Status: `running` (100-update smoke passed; 4000-update pair authorized)
 
 ## Question
 
@@ -45,6 +45,61 @@ python scripts/train_openstl_simvp.py \
 - Require peak memory below the A4000 limit with useful margin.
 - If stable, authorize one 4000-update MSE baseline and its paired tail-area
   run using identical seed and data order.
+
+## Smoke result
+
+The gSTA smoke test passed all gates:
+
+- 100/100 optimizer updates, zero skipped updates and zero FP32 fallbacks;
+- 18,706,497 parameters;
+- 9,917,962,240 bytes (9.92 GB decimal) peak allocated GPU memory;
+- 38.68 seconds wall time;
+- finite training and validation outputs.
+
+The 100-update CSI values are not method evidence. They are intentionally
+discarded as undertrained smoke-test metrics. The paired 4000-update gate is
+authorized below.
+
+## Authorized baseline command
+
+```bash
+python scripts/train_openstl_simvp.py \
+  --data-root /home/amon/zyx/dataset/sevir_data \
+  --manifest artifacts/local/sevir_official_manifest.csv \
+  --output-dir artifacts/local/exp017_gsta_baseline_seed0_128 \
+  --model-type gSTA \
+  --resolution 128 \
+  --batch-size 8 \
+  --epochs 1 \
+  --max-train-batches 4000 \
+  --max-val-batches 200 \
+  --learning-rate 0.005 \
+  --amp-dtype bfloat16 \
+  --seed 0 \
+  --workers 2
+```
+
+## Authorized tail command
+
+```bash
+python scripts/train_openstl_simvp.py \
+  --data-root /home/amon/zyx/dataset/sevir_data \
+  --manifest artifacts/local/sevir_official_manifest.csv \
+  --output-dir artifacts/local/exp017_gsta_tail_area_seed0_128 \
+  --model-type gSTA \
+  --resolution 128 \
+  --batch-size 8 \
+  --epochs 1 \
+  --max-train-batches 4000 \
+  --max-val-batches 200 \
+  --learning-rate 0.005 \
+  --tail-area-weight 0.0003 \
+  --tail-temperature-raw 10 \
+  --tail-thresholds 160 181 219 \
+  --amp-dtype bfloat16 \
+  --seed 0 \
+  --workers 2
+```
 
 ## Pair decision rule
 
