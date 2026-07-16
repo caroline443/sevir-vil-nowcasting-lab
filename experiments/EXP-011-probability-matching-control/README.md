@@ -1,6 +1,6 @@
 # EXP-011: probability-matching closest-loss control
 
-Status: `planned`
+Status: `running` — published-weight arm completed; protocol-matched weight pending
 
 ## Question
 
@@ -71,3 +71,33 @@ larger MSE or SUCR penalty, the standalone tail-loss innovation is rejected.
 The project then moves to the unresolved spatial-reliability problem with PM as
 a required baseline.
 
+## Published-weight result
+
+The numerically valid `weight=10` arm did not pass the closest-loss gate:
+
+- mean CSI 0.30728 versus 0.30886 for MSE and 0.33824 for tail area;
+- validation MSE +52.27% versus MSE, compared with +0.65% for tail area;
+- PM improved CSI at 160/181/219 over MSE, but degraded CSI at 16/74 and had a
+  much larger SUCR penalty;
+- tail area exceeded PM lead-mean CSI at all six thresholds.
+
+This arm alone is not a fair reason to dismiss PM because its published weight
+was selected under a different 10-minute temporal protocol. Run the same 10%
+gradient-scale procedure used to select the tail-area weight:
+
+```bash
+python scripts/probe_probability_matching_scale.py \
+  --data-root /home/amon/zyx/dataset/sevir_data \
+  --manifest artifacts/local/sevir_official_manifest.csv \
+  --checkpoint artifacts/local/exp010_bf16_baseline_seed0/last.pt \
+  --output artifacts/local/exp011_pm_scale_probe.json \
+  --resolution 128 \
+  --batch-size 8 \
+  --max-batches 8 \
+  --amp-dtype bfloat16 \
+  --workers 2
+```
+
+The returned median weight determines one final seed-0 PM run. No broad metric
+sweep is allowed: the purpose is fair gradient-scale matching, not tuning on the
+validation score.

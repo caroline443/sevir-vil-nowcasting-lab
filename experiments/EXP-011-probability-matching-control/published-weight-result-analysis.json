@@ -1,0 +1,60 @@
+{
+  "decision": "published_weight_arm_failed_but_closest_loss_gate_remains_open",
+  "protocol": {
+    "resolution": 128,
+    "seed": 0,
+    "train_updates": 4000,
+    "validation_batches": 200,
+    "amp_dtype": "bfloat16",
+    "probability_matching_weight": 10.0
+  },
+  "numerical_validity": {
+    "optimizer_updates": 4000,
+    "amp_fp32_fallbacks": 0,
+    "skipped_optimizer_updates": 0
+  },
+  "overall": {
+    "baseline_csi_mean": 0.3088639352051488,
+    "tail_area_csi_mean": 0.33823810677191074,
+    "probability_matching_csi_mean": 0.3072818484180228,
+    "probability_matching_csi_relative_to_baseline": -0.005122277504089889,
+    "tail_area_csi_relative_to_baseline": 0.0951039218847336,
+    "baseline_mse": 0.0025751428034285102,
+    "tail_area_mse": 0.002592003669578844,
+    "probability_matching_mse": 0.00392128162661417,
+    "probability_matching_mse_relative_to_baseline": 0.5227433684040468,
+    "tail_area_mse_relative_to_baseline": 0.006547546073128574
+  },
+  "lead_mean_csi_relative_to_baseline": {
+    "16": {
+      "probability_matching": -0.0592,
+      "tail_area": 0.0002
+    },
+    "74": {
+      "probability_matching": -0.0738,
+      "tail_area": 0.0043
+    },
+    "133": {
+      "probability_matching": 0.0164,
+      "tail_area": 0.1372
+    },
+    "160": {
+      "probability_matching": 0.2491,
+      "tail_area": 0.4064
+    },
+    "181": {
+      "probability_matching": 0.4373,
+      "tail_area": 0.6218
+    },
+    "219": {
+      "probability_matching": 0.2976,
+      "tail_area": 1.0724
+    }
+  },
+  "interpretation": [
+    "The published PM weight restores severe forecast area but substantially increases false alarms and MSE under the frozen five-minute 13-to-12 protocol.",
+    "SoftExceedanceAreaLoss dominates PM weight 10 at every threshold in lead-mean CSI and incurs far less MSE degradation.",
+    "This does not yet close the novelty gate because the published weight was tuned under a different temporal protocol; a protocol-matched gradient-scale control is required."
+  ]
+}
+
