@@ -1,0 +1,28 @@
+{
+  "decision": "numerical_smoke_passed",
+  "amp_dtype": "bfloat16",
+  "amp_fp32_fallbacks": 0,
+  "facl_term_counts": {
+    "fal": 53,
+    "fcl": 47
+  },
+  "mean_train_facl_loss": 19.55200142979622,
+  "mean_train_mse": 0.049690918121486904,
+  "optimizer_updates": 100,
+  "skipped_optimizer_updates": 0,
+  "validation": {
+    "csi_mean": 0.16568973210242843,
+    "mse": 0.01020214374633118,
+    "interpretation": "finite but deliberately undertrained; not used for method comparison"
+  },
+  "peak_allocated_bytes": 8719130112,
+  "wall_seconds": 39.47134671799722,
+  "checks": {
+    "all_updates_completed": true,
+    "both_facl_terms_exercised": true,
+    "no_amp_fallbacks": true,
+    "no_skipped_updates": true,
+    "finite_validation_metrics": true
+  }
+}
+

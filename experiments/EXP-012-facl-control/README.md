@@ -1,6 +1,6 @@
 # EXP-012: FACL closest-loss control
 
-Status: `planned`
+Status: `running` — 100-update smoke passed; 4000-update gate pending
 
 ## Question
 
@@ -52,11 +52,36 @@ The smoke test must have 100 optimizer updates, no fallback/skips, finite
 metrics, and nonzero FCL and FAL term counts. Do not launch the 4000-update arm
 until these checks pass.
 
+### Smoke result
+
+Passed: 100 optimizer updates, zero fallbacks/skips, 47 FCL selections and 53
+FAL selections. Peak allocation was 8.72 GB and all validation values were
+finite. The undertrained validation CSI/MSE are recorded only as numerical
+diagnostics and are not method evidence.
+
 ## Planned full gate
 
 If the smoke test passes, repeat with `--max-train-batches 4000`,
 `--max-val-batches 200`, and output directory
 `artifacts/local/exp012_facl4000_seed0_128`.
+
+```bash
+python scripts/train_openstl_simvp.py \
+  --data-root /home/amon/zyx/dataset/sevir_data \
+  --manifest artifacts/local/sevir_official_manifest.csv \
+  --output-dir artifacts/local/exp012_facl4000_seed0_128 \
+  --resolution 128 \
+  --batch-size 8 \
+  --epochs 1 \
+  --max-train-batches 4000 \
+  --max-val-batches 200 \
+  --learning-rate 0.005 \
+  --training-loss facl \
+  --facl-constant-ratio 0.1 \
+  --amp-dtype bfloat16 \
+  --seed 0 \
+  --workers 2
+```
 
 ## Decision rule
 
@@ -66,4 +91,3 @@ If the smoke test passes, repeat with `--max-train-batches 4000`,
   severe-tail component, while FACL remains the sharpness/distribution baseline.
 - A combination experiment is not automatic; it requires evidence that their
   gradient directions and error corrections are complementary.
-
