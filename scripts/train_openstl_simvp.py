@@ -47,6 +47,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--log-every", type=int, default=50)
     parser.add_argument(
+        "--model-type",
+        choices=("IncepU", "gSTA"),
+        default="IncepU",
+        help="OpenSTL SimVP temporal translator; IncepU preserves prior runs",
+    )
+    parser.add_argument(
         "--tail-area-weight",
         type=float,
         default=0.0,
@@ -140,7 +146,7 @@ def make_loader(
     )
 
 
-def build_model(resolution: int) -> nn.Module:
+def build_model(resolution: int, model_type: str = "IncepU") -> nn.Module:
     upstream = load_official_simvp_module()
     actual_hash = file_sha256(upstream.__file__)
     if actual_hash != OPENSTL_MODEL_SHA256:
@@ -154,7 +160,7 @@ def build_model(resolution: int) -> nn.Module:
         hid_T=256,
         N_S=2,
         N_T=4,
-        model_type="IncepU",
+        model_type=model_type,
         spatio_kernel_enc=3,
         spatio_kernel_dec=3,
         drop_path=0.1,
@@ -263,7 +269,7 @@ def main() -> int:
         and not torch.cuda.is_bf16_supported()
     ):
         raise RuntimeError("this CUDA device/runtime does not support bfloat16 AMP")
-    model = build_model(args.resolution).to(device)
+    model = build_model(args.resolution, args.model_type).to(device)
     # OpenSTL defaults to Adam with zero weight decay. Its SEVIR config sets
     # max_lr=5e-3 and sched='onecycle'. The pilot compresses that schedule into
     # its bounded number of updates; it is not a full-score reproduction.

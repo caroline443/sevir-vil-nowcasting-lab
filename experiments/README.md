@@ -62,6 +62,10 @@ EXP-016 probes tail-area gradient support by lead and soft-threshold
 temperature. It gates a possible lead-adaptive continuation component after
 EXP-015 rejects general trajectory-balanced sampling.
 
+EXP-017 tests whether the fixed tail-area component transfers from SimVP-v1's
+IncepU translator to SimVP-v2's gSTA translator without retuning. It begins
+with a 100-update A4000 numerical and memory smoke test.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;
