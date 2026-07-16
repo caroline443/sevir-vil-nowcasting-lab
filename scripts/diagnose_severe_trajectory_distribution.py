@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +28,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--workers", type=int, default=2)
     parser.add_argument(
+        "--log-every",
+        type=int,
+        default=100,
+        help="Print progress every N completed batches; zero disables progress logs.",
+    )
+    parser.add_argument(
         "--max-batches",
         type=int,
         default=0,
@@ -38,8 +45,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--growth-ratio", type=float, default=1.25)
     parser.add_argument("--decay-ratio", type=float, default=0.8)
     args = parser.parse_args()
-    if args.batch_size < 1 or args.resolution < 1 or args.max_batches < 0:
-        parser.error("batch-size and resolution must be positive; max-batches >= 0")
+    if (
+        args.batch_size < 1
+        or args.resolution < 1
+        or args.max_batches < 0
+        or args.log_every < 0
+    ):
+        parser.error(
+            "batch-size and resolution must be positive; max-batches and "
+            "log-every must be non-negative"
+        )
     if not 0 < args.decay_ratio < 1 < args.growth_ratio:
         parser.error("require 0 < decay-ratio < 1 < growth-ratio")
     return args
@@ -100,6 +115,11 @@ def main() -> int:
         }
 
     completed_batches = 0
+    started_at = time.perf_counter()
+    total_batches = len(loader)
+    planned_batches = (
+        min(total_batches, args.max_batches) if args.max_batches else total_batches
+    )
     with torch.no_grad():
         for batch_index, batch in enumerate(loader):
             if args.max_batches and batch_index >= args.max_batches:
@@ -150,6 +170,26 @@ def main() -> int:
                         ((ratio > args.decay_ratio) & (ratio < args.growth_ratio)).sum()
                     )
             completed_batches += 1
+            if args.log_every and completed_batches % args.log_every == 0:
+                elapsed = time.perf_counter() - started_at
+                rate = completed_batches / elapsed
+                remaining = (planned_batches - completed_batches) / rate if rate else 0.0
+                print(
+                    json.dumps(
+                        {
+                            "completed_batches": completed_batches,
+                            "planned_batches": planned_batches,
+                            "elapsed_seconds": elapsed,
+                            "estimated_remaining_seconds": max(remaining, 0.0),
+                            "samples_processed": sum(
+                                int(value["samples"])
+                                for value in accumulators.values()
+                            )
+                            // len(accumulators),
+                        }
+                    ),
+                    flush=True,
+                )
 
     result_by_threshold: dict[str, object] = {}
     for key, acc in accumulators.items():
@@ -199,6 +239,7 @@ def main() -> int:
         "resolution": args.resolution,
         "batch_size": args.batch_size,
         "completed_batches": completed_batches,
+        "elapsed_seconds": time.perf_counter() - started_at,
         "max_batches": args.max_batches,
         "lead_minutes": [5 * (index + 1) for index in range(12)],
         "thresholds_raw": args.thresholds_raw,

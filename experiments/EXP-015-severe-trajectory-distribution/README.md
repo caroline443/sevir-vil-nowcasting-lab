@@ -39,6 +39,7 @@ python scripts/diagnose_severe_trajectory_distribution.py \
   --resolution 128 \
   --batch-size 16 \
   --max-batches 0 \
+  --log-every 100 \
   --thresholds-raw 160 181 219 \
   --workers 2
 ```
