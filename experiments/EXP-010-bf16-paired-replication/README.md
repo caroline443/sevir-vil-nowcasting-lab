@@ -1,6 +1,6 @@
 # EXP-010: frozen BF16 paired replication
 
-Status: `planned`
+Status: `completed — development mechanism gate passed`
 
 ## Question
 
@@ -43,3 +43,24 @@ python scripts/summarize_bf16_paired_replications.py \
 
 The report contains per-seed paired changes, mean/sample standard deviation,
 threshold-wise lead means, and the number of seeds that improve at every lead.
+
+## Result and decision
+
+The mechanism replicated. Mean mCSI increased from `0.30598±0.00283` to
+`0.33577±0.00276`; every seed improved by 8.95%–10.37%. Lead-mean CSI gains
+averaged +45.1%, +67.9% and +96.1% at thresholds 160, 181 and 219. For those
+three thresholds, as well as threshold 133, the proposed objective improved all
+144 seed-threshold-lead comparisons. Threshold 16 was effectively unchanged and
+the worst seed changed by only -0.14%, within the pre-registered -2% guardrail.
+
+The tradeoff is also reproducible. MSE worsened by 1.00% on average. Mean POD
+rose by 58.7%, 84.4% and 125.4% at thresholds 160/181/219, while mean SUCR fell
+by 22.3%, 29.9% and 16.8%. At 60 minutes, proposed severe forecast area still
+represented only 12.3%, 7.1% and 7.2% of observed area. The loss therefore
+mitigates severe-tail extinction but does not solve localization or calibration.
+
+This is a passed 128×128 development gate, not a paper-level result. Native
+resolution, complete evaluation, event-level uncertainty and another backbone
+remain required. Before spending more GPU time, the method's novelty must be
+audited against balanced losses, threshold-aware objectives, FACL, SimCast and
+neighborhood/location-tolerant losses.

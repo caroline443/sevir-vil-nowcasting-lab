@@ -1,0 +1,82 @@
+{
+  "decision": "development_mechanism_gate_passed",
+  "limitations": [
+    "128x128 development resolution",
+    "4000-update bounded training rather than full reproduction",
+    "first 1600 validation samples rather than final test evaluation",
+    "single backbone",
+    "aggregate metrics do not support event-level confidence intervals"
+  ],
+  "overall": {
+    "csi_mean": {
+      "baseline_mean": 0.3059848510567809,
+      "baseline_sample_std": 0.0028259205921429874,
+      "paired_absolute_gain_mean": 0.029782485135638765,
+      "paired_absolute_gain_sample_std": 0.0020852316145120874,
+      "paired_relative_gain_mean": 0.0973554465432697,
+      "paired_relative_gain_sample_std": 0.0071841733444401885,
+      "proposed_mean": 0.33576733619241966,
+      "proposed_sample_std": 0.002758307098248047
+    },
+    "mse": {
+      "baseline_mean": 0.002563336718386482,
+      "paired_relative_change_mean": 0.009990426727670402,
+      "paired_relative_change_sample_std": 0.00591351381331756,
+      "proposed_mean": 0.0025888813828108446
+    }
+  },
+  "paired_relative_csi_change_by_threshold": {
+    "16": {
+      "mean": 0.00004798054984478384,
+      "sample_std": 0.0012684344444334331
+    },
+    "74": {
+      "mean": 0.002599123755584317,
+      "sample_std": 0.001986913563890877
+    },
+    "133": {
+      "mean": 0.15776497658810026,
+      "sample_std": 0.017551464007043042
+    },
+    "160": {
+      "mean": 0.45069452076155203,
+      "sample_std": 0.035025549623214615
+    },
+    "181": {
+      "mean": 0.6792635913873405,
+      "sample_std": 0.07559233745489863
+    },
+    "219": {
+      "mean": 0.9608434587883643,
+      "sample_std": 0.16788876744771689
+    }
+  },
+  "severe_threshold_tradeoff": {
+    "160": {
+      "lead_mean_pod_relative_change": 0.5867432686730847,
+      "lead_mean_sucr_relative_change": -0.22297636417757918,
+      "proposed_60min_forecast_to_observed_area_ratio": 0.12296308706092589
+    },
+    "181": {
+      "lead_mean_pod_relative_change": 0.8440104380018191,
+      "lead_mean_sucr_relative_change": -0.2986330480568747,
+      "proposed_60min_forecast_to_observed_area_ratio": 0.07143334000934641
+    },
+    "219": {
+      "lead_mean_pod_relative_change": 1.2538790622607345,
+      "lead_mean_sucr_relative_change": -0.16754056094944736,
+      "proposed_60min_forecast_to_observed_area_ratio": 0.0723062381852552
+    }
+  },
+  "stability": {
+    "csi_133_160_181_219_improved_seed_lead_cases": 144,
+    "csi_133_160_181_219_total_seed_lead_cases": 144,
+    "high_threshold_result": "all three seeds improve at all twelve leads",
+    "worst_seed_relative_csi_change_at_16": -0.001412210346551257
+  },
+  "remaining_problem": {
+    "baseline_mean_vil_relative_bias_at_60min": 0.01105972969800558,
+    "proposed_mean_vil_relative_bias_at_60min": 0.01939137809204028,
+    "summary": "tail recall improves strongly but precision and calibration costs remain; severe area is still substantially underforecast at 60 minutes"
+  }
+}
