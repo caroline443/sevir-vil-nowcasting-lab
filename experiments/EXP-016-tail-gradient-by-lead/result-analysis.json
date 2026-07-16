@@ -1,0 +1,57 @@
+{
+  "experiment": "EXP-016",
+  "status": "completed",
+  "checkpoint": "artifacts/local/exp010_bf16_tail_area_seed0/last.pt",
+  "resolution": 128,
+  "validation_batches": 8,
+  "validation_samples": 64,
+  "selected_statistics": {
+    "temperature_10": {
+      "160": {
+        "upward_gradient_l1_5min": 2.0602806014940143,
+        "upward_gradient_l1_60min": 5.11167648434639,
+        "effective_support_5min": 0.0038670194308269195,
+        "effective_support_60min": 0.004954154268065167,
+        "upward_inside_radius4_60min": 0.2482979119484747
+      },
+      "181": {
+        "upward_gradient_l1_5min": 1.3182735129375942,
+        "upward_gradient_l1_60min": 3.5347697269171476,
+        "effective_support_5min": 0.0014047505115352217,
+        "effective_support_60min": 0.0022411939056919514,
+        "upward_inside_radius4_60min": 0.2583691948935738
+      },
+      "219": {
+        "upward_gradient_l1_5min": 0.6880057983886959,
+        "upward_gradient_l1_60min": 0.49181424697826515,
+        "effective_support_5min": 0.00025741147334157506,
+        "effective_support_60min": 0.00024813048045104586,
+        "upward_inside_radius4_5min": 0.355413497898522,
+        "upward_inside_radius4_60min": 0.0101990651178175
+      }
+    },
+    "threshold_219_at_60min": {
+      "temperature_5_upward_l1": 0.009908910873035375,
+      "temperature_5_inside_radius4": 0.0005298104247261303,
+      "temperature_20_upward_l1": 2.5742700546979904,
+      "temperature_20_inside_radius4": 0.019941870243579022,
+      "temperature_30_upward_l1": 1.28614722751081,
+      "temperature_30_inside_radius4": 0.020610547496324502
+    }
+  },
+  "hypothesis_test": {
+    "temperature_10_tail_gradient_saturates_at_long_lead_for_160_181": "rejected",
+    "wider_temperature_restores_spatially_useful_219_gradient": "rejected",
+    "extreme_219_failure_requires_more_than_scalar_area_information": "supported"
+  },
+  "decision": {
+    "lead_adaptive_temperature_training": "not_authorized",
+    "retain_temperature_10_for_existing_component": "yes_pending_broader_ablation",
+    "next_action": "re-audit representation or conditioning alternatives before further training"
+  },
+  "limitations": [
+    "The probe uses 64 validation samples and seed 0.",
+    "Gradient localization uses target-mask dilation and does not track storm objects.",
+    "Gradient statistics are with respect to output pixels, not model parameters."
+  ]
+}
