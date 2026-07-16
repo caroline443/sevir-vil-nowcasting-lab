@@ -54,6 +54,10 @@ pixels recovered by tail-area training are near observed storms. This cancels
 the proposed pure false-alarm penalty and redirects the next problem gate to
 long-lead severe-event rarity and temporal survival.
 
+EXP-015 measures the train-split frequency of severe initiation, extinction,
+persistence and area growth. It gates any trajectory-balanced sampling or
+curriculum component before additional model training is authorized.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;
