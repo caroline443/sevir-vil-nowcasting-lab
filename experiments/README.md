@@ -48,6 +48,12 @@ EXP-013 diagnoses whether the remaining tail-area precision cost comes from
 small spatial displacement or remote hallucination. It is read-only checkpoint
 evaluation and gates the design of any second method component.
 
+EXP-014 pairs the EXP-013 tail diagnosis with the seed-0 MSE baseline. It shows
+that the baseline mostly abstains at severe thresholds and that most severe
+pixels recovered by tail-area training are near observed storms. This cancels
+the proposed pure false-alarm penalty and redirects the next problem gate to
+long-lead severe-event rarity and temporal survival.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;

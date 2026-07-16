@@ -1,0 +1,63 @@
+{
+  "experiment": "EXP-014",
+  "status": "completed",
+  "baseline_checkpoint": "artifacts/local/exp010_bf16_baseline_seed0/last.pt",
+  "tail_checkpoint": "artifacts/local/exp010_bf16_tail_area_seed0/last.pt",
+  "resolution": 128,
+  "validation_batches": 200,
+  "summary_by_threshold": {
+    "160": {
+      "minute_60_area_ratio_baseline": 0.009968168872507958,
+      "minute_60_area_ratio_tail": 0.1366895627408276,
+      "added_forecast_pixels_all_leads": 147823,
+      "incremental_tolerant_precision_r0": 0.3823221014321182,
+      "incremental_tolerant_precision_r2": 0.8506051155774135,
+      "incremental_tolerant_precision_r4": 0.9412337728229031,
+      "incremental_tolerant_precision_r8": 0.9774595293019355,
+      "mean_tolerant_recall_delta_r8": 0.22078703690919305,
+      "minute_60_tolerant_recall_r8_baseline": 0.026084771318478805,
+      "minute_60_tolerant_recall_r8_tail": 0.28808845702797786
+    },
+    "181": {
+      "minute_60_area_ratio_baseline": 0.0003004205888243541,
+      "minute_60_area_ratio_tail": 0.07670739034648508,
+      "added_forecast_pixels_all_leads": 47671,
+      "incremental_tolerant_precision_r0": 0.3725325669694363,
+      "incremental_tolerant_precision_r2": 0.8439932034150741,
+      "incremental_tolerant_precision_r4": 0.9228042205953305,
+      "incremental_tolerant_precision_r8": 0.9556124268423151,
+      "mean_tolerant_recall_delta_r8": 0.25017297503170033,
+      "minute_60_tolerant_recall_r8_baseline": 0.0019527338273583016,
+      "minute_60_tolerant_recall_r8_tail": 0.17133987582615662
+    },
+    "219": {
+      "minute_60_area_ratio_baseline": 0.0,
+      "minute_60_area_ratio_tail": 0.07514177693761814,
+      "added_forecast_pixels_all_leads": 5407,
+      "incremental_tolerant_precision_r0": 0.2641020898834844,
+      "incremental_tolerant_precision_r2": 0.712779729979656,
+      "incremental_tolerant_precision_r4": 0.8243018309598669,
+      "incremental_tolerant_precision_r8": 0.8681339004993527,
+      "mean_tolerant_recall_delta_r8": 0.20289817562040147,
+      "minute_60_tolerant_recall_r8_baseline": 0.0,
+      "minute_60_tolerant_recall_r8_tail": 0.13043478260869565
+    }
+  },
+  "interpretation": [
+    "The MSE baseline's high tolerant precision is partly an abstention artifact because its long-lead severe forecast area is nearly zero.",
+    "Most severe pixels introduced by SoftExceedanceAreaLoss are spatially close to observed severe regions.",
+    "SoftExceedanceAreaLoss improves tolerant recall at every tested threshold and radius.",
+    "A pure false-alarm penalty would target the wrong dominant failure and could encourage renewed abstention."
+  ],
+  "decision": {
+    "remote_hallucination_explains_tail_gain": "rejected",
+    "pure_spatial_false_alarm_penalty": "cancelled",
+    "soft_exceedance_area_loss": "retained_as_component_one",
+    "next_problem_gate": "measure rarity and temporal evolution of persistent or growing severe sequences before selecting component two"
+  },
+  "limitations": [
+    "The paired spatial diagnosis currently uses seed 0 only.",
+    "Incremental tolerant precision is reconstructed from aggregate matched and forecast counts; it does not track pixel identity between models.",
+    "The 128-resolution tolerance radii require explicit mapping before native-resolution interpretation."
+  ]
+}
