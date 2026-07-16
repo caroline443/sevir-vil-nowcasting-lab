@@ -1,0 +1,18 @@
+{
+  "amp_dtype": "bfloat16",
+  "checkpoint": "artifacts/local/exp010_bf16_baseline_seed0/last.pt",
+  "median_gradient_cosine": 0.06470424515301577,
+  "ok": true,
+  "published_weight_control": 10.0,
+  "purpose": "probability_matching_gradient_scale_probe",
+  "recommended_probability_matching_weight": 0.24980205729723362,
+  "selected_rounded_weight": 0.25,
+  "target_gradient_fraction": 0.1,
+  "validation_batches": 8,
+  "interpretation": [
+    "The published PM weight of 10 is approximately forty times the protocol-matched 10-percent gradient-scale weight.",
+    "This explains why the published-weight arm strongly increased severe forecast area but caused a 52.27-percent validation-MSE increase and large SUCR losses.",
+    "The median PM-versus-MSE gradient cosine is positive and larger than the previously observed tail-area-versus-MSE cosine, suggesting that PM supplies a less tail-specific auxiliary direction."
+  ]
+}
+

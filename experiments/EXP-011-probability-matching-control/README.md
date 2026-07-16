@@ -101,3 +101,33 @@ python scripts/probe_probability_matching_scale.py \
 The returned median weight determines one final seed-0 PM run. No broad metric
 sweep is allowed: the purpose is fair gradient-scale matching, not tuning on the
 validation score.
+
+## Protocol-matched scale result
+
+The eight-batch BF16 probe recommended `0.249802`, rounded before training to
+`0.25`. The published weight of 10 is approximately 40 times larger under this
+gradient-norm comparison. Median PM/MSE gradient cosine was `+0.06470`, versus
+approximately `+0.00408` for tail area/MSE in the corresponding probe.
+
+Run the final closest-loss arm:
+
+```bash
+python scripts/train_openstl_simvp.py \
+  --data-root /home/amon/zyx/dataset/sevir_data \
+  --manifest artifacts/local/sevir_official_manifest.csv \
+  --output-dir artifacts/local/exp011_pm_w0.25_seed0_128 \
+  --resolution 128 \
+  --batch-size 8 \
+  --epochs 1 \
+  --max-train-batches 4000 \
+  --max-val-batches 200 \
+  --learning-rate 0.005 \
+  --probability-matching-weight 0.25 \
+  --amp-dtype bfloat16 \
+  --seed 0 \
+  --workers 2
+```
+
+This is the last full PM run in the development gate. If it underperforms tail
+area, no further PM weight sweep or extra PM seeds will be run before the method
+direction is reconsidered.
