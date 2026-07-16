@@ -32,3 +32,14 @@ python scripts/run_bf16_paired_replications.py \
 Completed valid jobs are skipped, so the command can be safely restarted after
 an external interruption. An invalid completed summary or failed subprocess stops
 the sequence immediately.
+
+After all jobs pass, generate the frozen paired summary:
+
+```bash
+python scripts/summarize_bf16_paired_replications.py \
+  --artifacts-root artifacts/local \
+  --output artifacts/local/exp010_bf16_paired_summary.json
+```
+
+The report contains per-seed paired changes, mean/sample standard deviation,
+threshold-wise lead means, and the number of seeds that improve at every lead.
