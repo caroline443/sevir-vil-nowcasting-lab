@@ -166,7 +166,7 @@ not guaranteed, and the present evidence is still below that bar.
   2024](https://papers.neurips.cc/paper_files/paper/2024/hash/b54532b0e57eb963b19e00583376cda3-Abstract-Conference.html).
 - Shi et al., 2017, [Deep Learning for Precipitation Nowcasting: A Benchmark
   and a New Model, NeurIPS](https://proceedings.neurips.cc/paper/2017/hash/a6db4ed04f1621a119799fd3d7545d3d-Abstract.html).
-- Chen et al., 2026, [Physics-Guided Latent Diffusion Model for Intensity- and
+- Gao et al., 2026, [Physics-Guided Latent Diffusion Model for Intensity- and
   Extremity-Aware VIL Nowcasting, IEEE
   JSTARS](https://doi.org/10.1109/JSTARS.2026.3694114).
 - Ascenso et al., 2024, [Differentiable FSS used as a training
@@ -175,4 +175,3 @@ not guaranteed, and the present evidence is still below that bar.
   postprocessing](https://doi.org/10.1029/2020GL087839).
 - Veillette et al., 2020, [SEVIR dataset,
   NeurIPS](https://proceedings.neurips.cc/paper/2020/hash/fa78a16157fed00d7a80515818432169-Abstract.html).
-
