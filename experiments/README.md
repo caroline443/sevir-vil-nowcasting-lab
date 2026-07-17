@@ -80,7 +80,15 @@ claim.
 
 EXP-020 repeats the frozen ConvLSTM pair at seed 1 before any coefficient
 calibration. It determines whether both the large cross-backbone gain and the
-long-lead overforecast limitation are reproducible.
+long-lead overforecast limitation are reproducible. Both replicate: the
+two-seed mean relative CSI gain is 25.17% and mean MSE change is -11.91%;
+long-lead severe-area overforecasting is therefore retained as a stable
+calibration boundary.
+
+EXP-021 performs a read-only hard-versus-soft area audit on both frozen
+ConvLSTM tail checkpoints. It tests whether the stable long-lead overforecast
+comes from a mismatch between the temperature-10 training surrogate and hard
+threshold evaluation before any second component is designed.
 
 ## Experiment statuses
 

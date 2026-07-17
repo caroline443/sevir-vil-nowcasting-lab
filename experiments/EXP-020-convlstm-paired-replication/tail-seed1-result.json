@@ -1,0 +1,29 @@
+{
+  "experiment": "EXP-020",
+  "variant": "tail_area",
+  "model": "OpenSTL ConvLSTM",
+  "seed": 1,
+  "resolution": 128,
+  "train_steps": 4000,
+  "validation_batches": 200,
+  "learning_rate": 0.0005,
+  "tail_area_weight": 0.0003,
+  "tail_temperature_raw": 10.0,
+  "tail_thresholds": [
+    160.0,
+    181.0,
+    219.0
+  ],
+  "initial_teacher_forcing_probability": 1.0,
+  "final_teacher_forcing_probability": 0.91999999999992,
+  "mean_train_mse": 0.0019561521093201008,
+  "mean_train_objective": 0.002015057407457789,
+  "mean_train_tail_area_loss": 0.19635099058283959,
+  "validation_csi_mean": 0.35672843741699656,
+  "validation_mse": 0.0029872737381947444,
+  "parameters": 15083520,
+  "peak_allocated_bytes": 2311082496,
+  "wall_seconds": 2910.8591800179856,
+  "openstl_convlstm_sha256": "fefbdffed8ef3800a53eae41dfbfdd0718e962734e0f94b7b90dd441297b40ee",
+  "ok": true
+}

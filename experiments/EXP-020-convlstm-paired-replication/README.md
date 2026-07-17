@@ -1,6 +1,9 @@
 # EXP-020: ConvLSTM paired replication
 
-Status: `planned`
+Status: `completed`
+
+Current decision: the seed-1 pair replicates both the large cross-backbone
+skill gain and the long-lead severe-area overforecasting observed at seed 0.
 
 ## Question
 
@@ -79,3 +82,41 @@ python scripts/train_openstl_convlstm.py \
 - If both replicate, retain overforecasting as a stable limitation and consider
   a separately declared calibration study only after the core evidence is
   frozen.
+
+## Final paired result
+
+Both runs completed 4000/4000 optimizer updates with identical final
+teacher-forcing probability `0.91999999999992` and matching pinned source hash.
+The baseline took 2840.4 seconds and the tail run 2910.9 seconds. Peak allocated
+memory remained 2.31 GB.
+
+Overall validation mean CSI rises from `0.281315` to `0.356728`
+(`+26.81%` relative), while MSE falls from `0.00343712` to `0.00298727`
+(`-13.09%`). CSI improves at all 12 leads for all six reported thresholds.
+
+Relative lead-mean CSI gains are `+2.64%`, `+9.37%`, `+43.83%`, `+98.78%`,
+`+171.26%` and `+494.98%` at thresholds 16, 74, 133, 160, 181 and 219.
+Mean POD gains at 160/181/219 are `+163.19%`, `+293.24%` and `+889.76%`.
+Mean SUCR changes by `+9.95%`, `+27.16%` and `-16.69%`, so the 160/181
+gains improve both detection and precision.
+
+The long-lead calibration boundary also replicates. At 60 minutes,
+forecast-to-observed area ratios change from `0.221` to `1.650` at threshold
+160, from `0.216` to `2.417` at 181, and from `0.014` to `4.598` at 219.
+The domain-mean prediction bias changes from `-0.00270` to `+0.00740`.
+
+## Two-seed conclusion
+
+Across seeds 0 and 1:
+
+- mean relative CSI improvement is `25.17%` (range `23.54–26.81%`);
+- mean relative MSE change is `-11.91%` (range `-13.09–-10.73%`);
+- every severe threshold improves at every lead in both seeds;
+- recurrent long-lead severe-area overforecasting is reproducible.
+
+The replication gate passes. The cross-backbone result can now be retained as
+a central bounded-protocol paper claim. The next step is a read-only
+hard-versus-soft area audit before designing any calibration component.
+
+See `paired-result-analysis.json` and
+`two-seed-convlstm-aggregate.json` for exact values.

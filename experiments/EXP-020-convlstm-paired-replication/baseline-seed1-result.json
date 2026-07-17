@@ -1,0 +1,22 @@
+{
+  "experiment": "EXP-020",
+  "variant": "baseline",
+  "model": "OpenSTL ConvLSTM",
+  "seed": 1,
+  "resolution": 128,
+  "train_steps": 4000,
+  "validation_batches": 200,
+  "learning_rate": 0.0005,
+  "tail_area_weight": 0.0,
+  "initial_teacher_forcing_probability": 1.0,
+  "final_teacher_forcing_probability": 0.91999999999992,
+  "mean_train_mse": 0.0023728309003709,
+  "mean_train_objective": 0.0023728309003709,
+  "validation_csi_mean": 0.281315410712708,
+  "validation_mse": 0.003437115403238143,
+  "parameters": 15083520,
+  "peak_allocated_bytes": 2310032896,
+  "wall_seconds": 2840.4278301270097,
+  "openstl_convlstm_sha256": "fefbdffed8ef3800a53eae41dfbfdd0718e962734e0f94b7b90dd441297b40ee",
+  "ok": true
+}

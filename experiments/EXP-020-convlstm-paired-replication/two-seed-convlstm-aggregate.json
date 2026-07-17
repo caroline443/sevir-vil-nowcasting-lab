@@ -1,0 +1,28 @@
+{
+  "experiment": "EXP-020",
+  "seeds": [
+    0,
+    1
+  ],
+  "baseline_csi_mean_across_seeds": 0.28431090885921295,
+  "tail_csi_mean_across_seeds": 0.35583424825165944,
+  "csi_relative_delta": {
+    "mean": 0.2517394300440542,
+    "min": 0.2354060001149172,
+    "max": 0.2680728599731912
+  },
+  "baseline_mse_mean_across_seeds": 0.0033763910038722617,
+  "tail_mse_mean_across_seeds": 0.0029735899309275737,
+  "mse_relative_delta": {
+    "mean": -0.11908724608747434,
+    "min": -0.13087767277746853,
+    "max": -0.10729681939748015
+  },
+  "severe_threshold_lead_comparisons_improved": {
+    "seed0": 36,
+    "seed1": 36,
+    "total": 72,
+    "possible": 72
+  },
+  "conclusion": "The fixed tail component reproducibly improves ConvLSTM CSI and MSE, while long-lead severe-area overforecasting is a stable calibration limitation."
+}

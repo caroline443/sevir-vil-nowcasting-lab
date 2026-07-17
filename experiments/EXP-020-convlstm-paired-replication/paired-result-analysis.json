@@ -1,0 +1,78 @@
+{
+  "experiment": "EXP-020",
+  "status": "completed",
+  "model": "OpenSTL ConvLSTM",
+  "resolution": 128,
+  "seed": 1,
+  "overall": {
+    "baseline_csi_mean": 0.281315410712708,
+    "tail_csi_mean": 0.35672843741699656,
+    "csi_absolute_delta": 0.07541302670428857,
+    "csi_relative_delta": 0.2680728599731912,
+    "baseline_mse": 0.003437115403238143,
+    "tail_mse": 0.0029872737381947444,
+    "mse_relative_delta": -0.13087767277746853,
+    "csi_mean_improved_leads": 12
+  },
+  "by_threshold": {
+    "16": {
+      "csi_relative_delta": 0.026441173425225672,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 0.04900267749981091,
+      "sucr_relative_delta": -0.01269403650555323,
+      "baseline_area_ratio_60": 1.1043266231729718,
+      "tail_area_ratio_60": 1.2812796175863412
+    },
+    "74": {
+      "csi_relative_delta": 0.09369138754294748,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 0.11095860937364677,
+      "sucr_relative_delta": 0.0029270388694626615,
+      "baseline_area_ratio_60": 0.7283784608499299,
+      "tail_area_ratio_60": 0.9259312000325488
+    },
+    "133": {
+      "csi_relative_delta": 0.4382953289987952,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 0.7357555211756688,
+      "sucr_relative_delta": -0.08825194997564634,
+      "baseline_area_ratio_60": 0.2851251761553093,
+      "tail_area_ratio_60": 1.1566684891842565
+    },
+    "160": {
+      "csi_relative_delta": 0.9878116419960281,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 1.6319219068385413,
+      "sucr_relative_delta": 0.09945363477816493,
+      "baseline_area_ratio_60": 0.22112581671971854,
+      "tail_area_ratio_60": 1.6502261685374435
+    },
+    "181": {
+      "csi_relative_delta": 1.7126110226879194,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 2.932403192652128,
+      "sucr_relative_delta": 0.2716189622255669,
+      "baseline_area_ratio_60": 0.21645303424794712,
+      "tail_area_ratio_60": 2.4168335669937915
+    },
+    "219": {
+      "csi_relative_delta": 4.949816366804132,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 8.897574946913041,
+      "sucr_relative_delta": -0.16687490340050048,
+      "baseline_area_ratio_60": 0.013705103969754254,
+      "tail_area_ratio_60": 4.5978260869565215
+    }
+  },
+  "long_lead_bias": {
+    "baseline_mean_prediction_minus_target_60": -0.0027000513509847224,
+    "tail_mean_prediction_minus_target_60": 0.007399784590816125,
+    "interpretation": "Both the underpersistence correction and the long-lead overforecast replicate."
+  },
+  "decision": {
+    "paired_replication": "pass",
+    "cross_backbone_gain_reproducible": true,
+    "long_lead_overforecast_reproducible": true,
+    "next_gate": "hard_soft_area_surrogate_audit"
+  }
+}
