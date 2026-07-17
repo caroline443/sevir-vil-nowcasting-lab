@@ -65,6 +65,7 @@ class LeadTimeVILMetrics:
     output_length: int = 12
     thresholds: tuple[int, ...] = SEVIR_THRESHOLDS
     squared_error: Tensor = field(init=False)
+    absolute_error: Tensor = field(init=False)
     value_sum_prediction: Tensor = field(init=False)
     value_sum_target: Tensor = field(init=False)
     element_count: Tensor = field(init=False)
@@ -74,6 +75,7 @@ class LeadTimeVILMetrics:
 
     def __post_init__(self) -> None:
         self.squared_error = torch.zeros(self.output_length, dtype=torch.float64)
+        self.absolute_error = torch.zeros(self.output_length, dtype=torch.float64)
         self.value_sum_prediction = torch.zeros(
             self.output_length, dtype=torch.float64
         )
@@ -103,6 +105,9 @@ class LeadTimeVILMetrics:
         self.squared_error += torch.sum(
             difference * difference, dim=reduce_dims
         ).double().cpu()
+        self.absolute_error += torch.sum(
+            difference.abs(), dim=reduce_dims
+        ).double().cpu()
         self.value_sum_prediction += torch.sum(
             prediction, dim=reduce_dims
         ).double().cpu()
@@ -126,11 +131,13 @@ class LeadTimeVILMetrics:
 
     def compute(self) -> dict[str, object]:
         mse = self.squared_error / self.element_count.clamp_min(1.0)
+        mae = self.absolute_error / self.element_count.clamp_min(1.0)
         mean_prediction = self.value_sum_prediction / self.element_count.clamp_min(1.0)
         mean_target = self.value_sum_target / self.element_count.clamp_min(1.0)
         result: dict[str, object] = {
             "lead_minutes": [5 * (index + 1) for index in range(self.output_length)],
             "mse_by_lead": mse.tolist(),
+            "mae_by_lead": mae.tolist(),
             "mean_prediction_by_lead": mean_prediction.tolist(),
             "mean_target_by_lead": mean_target.tolist(),
             "csi_by_threshold": {},
@@ -138,19 +145,29 @@ class LeadTimeVILMetrics:
             "sucr_by_threshold": {},
             "observed_pixels_by_threshold": {},
             "forecast_pixels_by_threshold": {},
+            "global_csi_by_threshold": {},
+            "global_pod_by_threshold": {},
+            "global_sucr_by_threshold": {},
         }
         csi_by_threshold = result["csi_by_threshold"]
         pod_by_threshold = result["pod_by_threshold"]
         sucr_by_threshold = result["sucr_by_threshold"]
         observed_by_threshold = result["observed_pixels_by_threshold"]
         forecast_by_threshold = result["forecast_pixels_by_threshold"]
+        global_csi_by_threshold = result["global_csi_by_threshold"]
+        global_pod_by_threshold = result["global_pod_by_threshold"]
+        global_sucr_by_threshold = result["global_sucr_by_threshold"]
         assert isinstance(csi_by_threshold, dict)
         assert isinstance(pod_by_threshold, dict)
         assert isinstance(sucr_by_threshold, dict)
         assert isinstance(observed_by_threshold, dict)
         assert isinstance(forecast_by_threshold, dict)
+        assert isinstance(global_csi_by_threshold, dict)
+        assert isinstance(global_pod_by_threshold, dict)
+        assert isinstance(global_sucr_by_threshold, dict)
 
         csi_stack: list[Tensor] = []
+        global_csi_values: list[float] = []
         for index, threshold in enumerate(self.thresholds):
             hits = self.hits[index]
             misses = self.misses[index]
@@ -172,7 +189,39 @@ class LeadTimeVILMetrics:
             forecast_by_threshold[str(threshold)] = (hits + false_alarms).tolist()
             csi_stack.append(csi)
 
+            global_hits = hits.sum()
+            global_misses = misses.sum()
+            global_false_alarms = false_alarms.sum()
+            global_csi_denominator = (
+                global_hits + global_misses + global_false_alarms
+            )
+            global_pod_denominator = global_hits + global_misses
+            global_sucr_denominator = global_hits + global_false_alarms
+            global_csi = (
+                float(global_hits / global_csi_denominator)
+                if global_csi_denominator > 0
+                else 0.0
+            )
+            global_pod = (
+                float(global_hits / global_pod_denominator)
+                if global_pod_denominator > 0
+                else 0.0
+            )
+            global_sucr = (
+                float(global_hits / global_sucr_denominator)
+                if global_sucr_denominator > 0
+                else 0.0
+            )
+            global_csi_by_threshold[str(threshold)] = global_csi
+            global_pod_by_threshold[str(threshold)] = global_pod
+            global_sucr_by_threshold[str(threshold)] = global_sucr
+            global_csi_values.append(global_csi)
+
         result["csi_mean_by_lead"] = torch.stack(csi_stack).mean(0).tolist()
         result["mse"] = float(self.squared_error.sum() / self.element_count.sum())
-        result["csi_mean"] = float(torch.stack(csi_stack).mean())
+        result["mae"] = float(self.absolute_error.sum() / self.element_count.sum())
+        lead_averaged_mcsi = float(torch.stack(csi_stack).mean())
+        result["csi_mean"] = lead_averaged_mcsi
+        result["mcsi_lead_avg"] = lead_averaged_mcsi
+        result["mcsi_global"] = sum(global_csi_values) / len(global_csi_values)
         return result

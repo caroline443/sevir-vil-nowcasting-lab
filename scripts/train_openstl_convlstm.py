@@ -13,6 +13,7 @@ from types import SimpleNamespace
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import numpy as np
 import torch
@@ -63,6 +64,21 @@ def parse_args() -> argparse.Namespace:
         default=0.00002,
         help="official per-update teacher-forcing probability decrement",
     )
+    parser.add_argument(
+        "--sampling-schedule",
+        choices=("upstream", "budget_linear"),
+        default="upstream",
+        help=(
+            "upstream preserves OpenSTL's fixed decrement; budget_linear "
+            "reaches sampling-end-probability on the final configured update"
+        ),
+    )
+    parser.add_argument(
+        "--sampling-end-probability",
+        type=float,
+        default=0.0,
+        help="final probability for budget_linear scheduled sampling",
+    )
     args = parser.parse_args()
     if min(
         args.batch_size,
@@ -78,6 +94,8 @@ def parse_args() -> argparse.Namespace:
         parser.error("tail weight must be non-negative and temperature positive")
     if args.sampling_stop_iter < 1 or args.sampling_changing_rate < 0:
         parser.error("scheduled-sampling arguments are invalid")
+    if not 0 <= args.sampling_end_probability <= 1:
+        parser.error("sampling-end-probability must lie in [0, 1]")
     return args
 
 
@@ -146,6 +164,29 @@ def scheduled_mask(
     return (
         torch.rand(batch_size, 11, 1, 1, 1, device=device) < eta
     ).float()
+
+
+def next_teacher_forcing_probability(
+    *,
+    schedule: str,
+    completed_updates: int,
+    total_steps: int,
+    current_probability: float,
+    changing_rate: float,
+    stop_iter: int,
+    end_probability: float,
+) -> float:
+    """Return the probability used for the next optimizer update."""
+    if total_steps < 1 or completed_updates < 0:
+        raise ValueError("total steps and completed updates are invalid")
+    if schedule == "budget_linear":
+        progress = min(1.0, (completed_updates + 1) / total_steps)
+        return 1.0 + (end_probability - 1.0) * progress
+    if schedule == "upstream":
+        if completed_updates < stop_iter:
+            return max(0.0, current_probability - changing_rate)
+        return 0.0
+    raise ValueError(f"unknown sampling schedule: {schedule}")
 
 
 def predict_future(
@@ -226,10 +267,15 @@ def main() -> int:
                 break
             inputs = batch["inputs"].to(device, non_blocking=True)
             targets = batch["targets"].to(device, non_blocking=True)
-            if global_step < args.sampling_stop_iter:
-                eta = max(0.0, eta - args.sampling_changing_rate)
-            else:
-                eta = 0.0
+            eta = next_teacher_forcing_probability(
+                schedule=args.sampling_schedule,
+                completed_updates=global_step,
+                total_steps=total_steps,
+                current_probability=eta,
+                changing_rate=args.sampling_changing_rate,
+                stop_iter=args.sampling_stop_iter,
+                end_probability=args.sampling_end_probability,
+            )
             mask = scheduled_mask(inputs.shape[0], eta, device)
             optimizer.zero_grad(set_to_none=True)
             with torch.autocast("cuda", dtype=torch.bfloat16):
@@ -288,7 +334,11 @@ def main() -> int:
         "mean_train_tail_area_loss": tail_sum / global_step,
         "initial_teacher_forcing_probability": 1.0,
         "final_teacher_forcing_probability": eta,
-        "scheduled_sampling_policy": "OpenSTL linear decrement",
+        "scheduled_sampling_policy": (
+            "OpenSTL fixed decrement"
+            if args.sampling_schedule == "upstream"
+            else "budget-aligned linear decrement"
+        ),
         "validation_batches": val_batches,
         "validation_samples_upper_bound": val_batches * args.batch_size,
         "optimizer": "Adam",

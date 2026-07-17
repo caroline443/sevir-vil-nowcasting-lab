@@ -102,6 +102,12 @@ this is treated as a protocol mismatch. The core loss method is frozen and the
 project moves to a budget-aligned formal protocol rather than adding another
 module.
 
+EXP-023 is the first paper-protocol infrastructure gate. It runs the frozen
+tail method with official SimVP at native 384 resolution, deliberately stops
+after one short epoch, resumes to the second, and verifies global metrics,
+validation selection and standalone checkpoint evaluation. Gate scores are
+discarded.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;

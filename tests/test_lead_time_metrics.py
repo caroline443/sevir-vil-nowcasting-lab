@@ -29,6 +29,31 @@ class LeadTimeMetricsTest(unittest.TestCase):
         self.assertEqual(result["pod_by_threshold"]["219"], [1.0, 0.0])
         self.assertEqual(result["observed_pixels_by_threshold"]["219"], [1.0, 1.0])
         self.assertEqual(result["mse_by_lead"], [0.0, 0.25])
+        self.assertEqual(result["mae_by_lead"], [0.0, 0.25])
+        self.assertEqual(result["mae"], 0.125)
+        self.assertEqual(result["global_csi_by_threshold"]["219"], 0.5)
+        self.assertEqual(result["global_pod_by_threshold"]["219"], 0.5)
+        self.assertEqual(result["global_sucr_by_threshold"]["219"], 1.0)
+        self.assertEqual(result["mcsi_global"], 0.5)
+        self.assertEqual(result["mcsi_lead_avg"], 0.5)
+
+    def test_global_csi_aggregates_counts_before_division(self) -> None:
+        target = torch.zeros(1, 2, 1, 2, 2)
+        prediction = torch.zeros_like(target)
+        target[:, :, :, 0, 0] = 1.0
+        prediction[:, 0, :, 0, 0] = 1.0
+        prediction[:, 1] = 1.0
+
+        metrics = LeadTimeVILMetrics(output_length=2, thresholds=(219,))
+        metrics.update(prediction, target)
+        result = metrics.compute()
+
+        self.assertEqual(
+            result["csi_by_threshold"]["219"],
+            [1.0, 0.25],
+        )
+        self.assertEqual(result["mcsi_lead_avg"], 0.625)
+        self.assertEqual(result["mcsi_global"], 0.4)
 
 
 if __name__ == "__main__":

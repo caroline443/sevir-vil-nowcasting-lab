@@ -103,3 +103,18 @@ These results diagnose mechanisms and select ablations. They are never used as f
 ## Comparability rule for the paper
 
 The main claim should be phrased as improvement over rerun baselines **under `sevir-vil-earthformer-v1`**, not as universal SEVIR SOTA. A broader SOTA claim is justified only if the method is also evaluated under the exact protocol of the competing paper or the competing method is rerun under this protocol.
+
+## Repository implementation
+
+- `scripts/train_paper_simvp.py` implements native-resolution BF16 training,
+  epoch validation, `mcsi_global` checkpoint selection, deliberate partial
+  stopping and exact optimizer/scheduler/RNG resume.
+- `scripts/evaluate_paper_simvp.py` evaluates a frozen checkpoint with the full
+  metric schema. Test evaluation requires `--confirm-final-test` and refuses to
+  overwrite an existing result.
+- `LeadTimeVILMetrics` reports both `mcsi_global` and `mcsi_lead_avg`; the
+  legacy `csi_mean` field remains an alias of `mcsi_lead_avg` for development
+  result compatibility.
+- ConvLSTM formal runs must use `--sampling-schedule budget_linear` with a
+  declared end probability rather than truncating the upstream 50000-update
+  schedule at a high teacher-forcing probability.
