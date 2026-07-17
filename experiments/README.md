@@ -96,6 +96,11 @@ EXP-022 evaluates the two frozen ConvLSTM tail checkpoints under diagnostic
 teacher-forcing probabilities from 1.0 to 0.0. It tests whether the remaining
 overforecast is caused by calibrating tail supervision on mostly
 teacher-forced trajectories and evaluating on free autoregressive rollouts.
+The hypothesis is strongly supported by a sharp failure at probability zero.
+Because the bounded trainer truncates a 50000-update schedule at 4000 updates,
+this is treated as a protocol mismatch. The core loss method is frozen and the
+project moves to a budget-aligned formal protocol rather than adding another
+module.
 
 ## Experiment statuses
 

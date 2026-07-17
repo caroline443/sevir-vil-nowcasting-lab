@@ -1,6 +1,10 @@
 # EXP-022: ConvLSTM teacher-forcing exposure audit
 
-Status: `planned`
+Status: `completed`
+
+Current decision: free-rollout exposure mismatch is strongly supported, but it
+is treated as a shortened-protocol defect rather than a new algorithmic
+contribution. The core method is frozen.
 
 ## Problem
 
@@ -55,3 +59,38 @@ python scripts/audit_convlstm_teacher_forcing.py \
   1.0 or if ratios do not respond consistently to teacher forcing.
 - Regardless of outcome, probability-zero scores remain the only valid forecast
   metrics.
+
+## Result
+
+Both frozen tail checkpoints were evaluated on the same 50 validation batches.
+At teacher-forcing probabilities 1.0, 0.92 and 0.5, the models underpredict
+60-minute severe area. At probability zero, severe area and mean bias jump
+sharply:
+
+- seed 0, threshold 219: area ratio `0.549` at probability 0.5 versus `5.867`
+  at probability 0;
+- seed 1, threshold 219: `0.611` versus `6.197`;
+- seed 0 MSE: `0.001277` versus `0.003721`;
+- seed 1 MSE: `0.001272` versus `0.003781`.
+
+The transition is not smoothly monotonic across all four probabilities.
+Instead, a distinct free-rollout failure appears when all future truth is
+removed. This still strongly supports exposure mismatch: both models were
+trained near probability 0.92 and are well behaved under teacher-forced and
+partially teacher-forced trajectories, but not under the fully autoregressive
+trajectory used in deployment.
+
+## Final interpretation
+
+The bounded 4000-update trainer retained the upstream decrement of 0.00002 per
+update, a schedule designed to continue toward a 50000-update stop. It therefore
+ended at probability 0.92. The resulting free-rollout failure should not be
+promoted as a second method contribution without first running a
+budget-aligned schedule.
+
+The paper method is frozen at SoftExceedanceAreaLoss. Formal recurrent
+experiments must use a declared training budget and scheduled-sampling schedule
+that reaches a low or zero teacher-forcing probability before evaluation.
+Probability-zero metrics remain the only valid nowcast results.
+
+See `result-analysis.json` for exact values.
