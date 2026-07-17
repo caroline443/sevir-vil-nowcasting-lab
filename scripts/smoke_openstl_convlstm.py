@@ -26,6 +26,9 @@ from sevir_nowcasting.data import SevirVILWindowDataset
 
 
 OPENSTL_COMMIT = "eecf8a3078f0a178dbc7b28723da20f94ce36985"
+OPENSTL_CONVLSTM_SHA256 = (
+    "fefbdffed8ef3800a53eae41dfbfdd0718e962734e0f94b7b90dd441297b40ee"
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -156,6 +159,11 @@ def main() -> int:
 
     upstream = load_official_convlstm_module()
     source_hash = file_sha256(upstream.__file__)
+    if source_hash != OPENSTL_CONVLSTM_SHA256:
+        raise RuntimeError(
+            "installed OpenSTL ConvLSTM source does not match the accepted smoke "
+            f"source: expected {OPENSTL_CONVLSTM_SHA256}, got {source_hash}"
+        )
     config = SimpleNamespace(
         in_shape=(13, 1, args.resolution, args.resolution),
         pre_seq_length=13,

@@ -1,6 +1,6 @@
 # EXP-018: official ConvLSTM feasibility gate
 
-Status: `planned`
+Status: `completed`
 
 ## Question
 
@@ -41,3 +41,17 @@ python scripts/smoke_openstl_convlstm.py \
   4000-update pairs would be disproportionate to the current evidence.
 - The first output records the installed source hash. Pin that hash before a
   full recurrent trainer is committed.
+
+## Result
+
+The gate passed with substantial margin:
+
+- exact output shape `[8,12,1,128,128]` and finite loss;
+- 15,083,520 parameters;
+- 2,228,940,800 bytes (2.23 GB decimal) peak allocated memory;
+- 0.703 seconds for one BF16 forward/backward/update step;
+- installed ConvLSTM source SHA-256
+  `fefbdffed8ef3800a53eae41dfbfdd0718e962734e0f94b7b90dd441297b40ee`.
+
+The observed source hash is now pinned. EXP-019 is authorized to implement the
+official linear scheduled-sampling policy and run a bounded seed-0 pair.

@@ -70,6 +70,10 @@ EXP-018 is a one-step official OpenSTL ConvLSTM resource gate. It decides
 whether a genuinely recurrent cross-backbone baseline/tail pair is feasible on
 the A4000 before a complete trainer is implemented.
 
+EXP-019 runs the frozen seed-0 ConvLSTM baseline/tail pair with official linear
+scheduled sampling and fully autoregressive validation. It is the first true
+cross-backbone transfer gate.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;

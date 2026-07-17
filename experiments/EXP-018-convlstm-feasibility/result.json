@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "batch_size": 8,
+  "resolution": 128,
+  "output_shape": [8, 12, 1, 128, 128],
+  "parameters": 15083520,
+  "peak_allocated_bytes": 2228940800,
+  "step_seconds": 0.7032646330189891,
+  "loss": 0.038575418293476105,
+  "openstl_version": "1.0.0",
+  "openstl_commit_expected": "eecf8a3078f0a178dbc7b28723da20f94ce36985",
+  "openstl_convlstm_sha256": "fefbdffed8ef3800a53eae41dfbfdd0718e962734e0f94b7b90dd441297b40ee",
+  "decision": "authorize_bounded_convlstm_seed0_pair"
+}
