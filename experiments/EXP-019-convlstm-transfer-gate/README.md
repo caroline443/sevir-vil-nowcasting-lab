@@ -1,6 +1,6 @@
 # EXP-019: ConvLSTM cross-backbone transfer gate
 
-Status: `planned`
+Status: `running` (trainer smoke passed; seed-0 pair authorized)
 
 ## Question
 
@@ -42,9 +42,23 @@ python scripts/train_openstl_convlstm.py \
 Require 100 updates, finite metrics, a final teacher-forcing probability of
 0.998 and successful output files. The 100-step scores are discarded.
 
+## Trainer-smoke result
+
+The trainer gate passed:
+
+- 100/100 optimizer updates and finite train/validation outputs;
+- final teacher-forcing probability `0.997999999999998`;
+- pinned source hash matched;
+- 2,310,032,896 bytes (2.31 GB decimal) peak allocated memory;
+- 38.89 seconds wall time;
+- summary, metrics and checkpoint writing completed.
+
+The 100-update CSI values are discarded as undertrained smoke metrics. The
+4000-update pair below is now authorized.
+
 ## Baseline command
 
-Pending trainer-smoke acceptance:
+Authorized after trainer-smoke acceptance:
 
 ```bash
 python scripts/train_openstl_convlstm.py \
@@ -63,7 +77,7 @@ python scripts/train_openstl_convlstm.py \
 
 ## Tail command
 
-Pending trainer-smoke acceptance:
+Authorized after trainer-smoke acceptance:
 
 ```bash
 python scripts/train_openstl_convlstm.py \
