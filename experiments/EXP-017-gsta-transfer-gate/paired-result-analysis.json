@@ -1,0 +1,65 @@
+{
+  "experiment": "EXP-017",
+  "status": "completed",
+  "model_type": "gSTA",
+  "resolution": 128,
+  "seed": 0,
+  "overall": {
+    "baseline_csi_mean": 0.3198197378030377,
+    "tail_csi_mean": 0.3489060962192655,
+    "csi_absolute_delta": 0.02908635841622781,
+    "csi_relative_delta": 0.09094610175104556,
+    "baseline_mse": 0.002497542033679565,
+    "tail_mse": 0.0025278574398180354,
+    "mse_relative_delta": 0.012138096468313542
+  },
+  "by_threshold": {
+    "133": {
+      "csi_relative_delta": 0.16071449395113357,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 0.2473560171626814,
+      "sucr_relative_delta": -0.09791096226499063,
+      "baseline_area_ratio_60": 0.17718721362729772,
+      "tail_area_ratio_60": 0.34312358979492824
+    },
+    "160": {
+      "csi_relative_delta": 0.3419624908561911,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 0.46753170745124195,
+      "sucr_relative_delta": -0.23501804528879966,
+      "baseline_area_ratio_60": 0.021226336069693416,
+      "tail_area_ratio_60": 0.16282459373429387
+    },
+    "181": {
+      "csi_relative_delta": 0.4980582643176912,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 0.6477697836442455,
+      "sucr_relative_delta": -0.26971605891989725,
+      "baseline_area_ratio_60": 0.0,
+      "tail_area_ratio_60": 0.11801522130983377
+    },
+    "219": {
+      "csi_relative_delta": 0.6544009483582183,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 0.8856161630000956,
+      "sucr_relative_delta": -0.04072182023752491,
+      "baseline_area_ratio_60": 0.0,
+      "tail_area_ratio_60": 0.15453686200378072
+    }
+  },
+  "low_threshold_guardrail": {
+    "csi_16_relative_delta": -0.001094574416074745,
+    "csi_74_relative_delta": 0.000011555288627729254
+  },
+  "decision": {
+    "cross_translator_transfer": "pass",
+    "generic_simvp_component_claim": "supported_under_bounded_protocol",
+    "broad_cross_backbone_claim": "not_yet_supported",
+    "next_gate": "recurrent_predictor_smoke_and_seed0_pair_if_feasible"
+  },
+  "limitations": [
+    "gSTA evidence currently uses one seed.",
+    "Both gSTA and IncepU belong to the SimVP family.",
+    "The 4000-update 128-resolution protocol is a bounded development protocol, not a full native-resolution reproduction."
+  ]
+}

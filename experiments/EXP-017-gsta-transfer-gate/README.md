@@ -1,10 +1,9 @@
 # EXP-017: gSTA transfer gate
 
-Status: `running` (100-update smoke passed; 4000-update pair authorized)
+Status: `completed`
 
-Current evidence: the 4000-update tail run is complete and numerically healthy;
-the paired baseline metrics have not yet been supplied, so the transfer claim
-remains unresolved.
+Current decision: the fixed tail component transfers to gSTA under the bounded
+seed-0 protocol without retuning.
 
 ## Question
 
@@ -121,7 +120,38 @@ observed area ratios are 16.28%, 11.80% and 15.45% for thresholds 160, 181 and
 219. Unlike the undertrained smoke test, this is a valid bounded-protocol model
 result.
 
-These absolute scores do not establish transfer because gSTA can differ from
-IncepU even under MSE. The experiment remains `running` until
-`artifacts/local/exp017_gsta_baseline_seed0_128/metrics.json` is paired with
-this output. See `tail-seed0-result.json` for the compact record.
+Those absolute scores alone did not establish transfer because gSTA can differ
+from IncepU even under MSE. They were held provisional until the paired baseline
+below was received. See `tail-seed0-result.json` for the compact tail record.
+
+## Final paired result
+
+The paired baseline was received on the identical validation subset. Tail-area
+training raises overall mean CSI from 0.31982 to 0.34891 (+9.09% relative) while
+MSE changes from 0.0024975 to 0.0025279 (+1.21%).
+
+CSI improves at all 12 leads for thresholds 133, 160, 181 and 219 (48/48
+comparisons). Lead-mean CSI gains are +16.1%, +34.2%, +49.8% and +65.4%,
+respectively. POD gains at 160/181/219 are +46.8%, +64.8% and +88.6%.
+
+The mechanism and cost match the IncepU evidence: severe-event abstention is
+reduced, while SUCR falls at 160 and 181. Lead-mean SUCR changes by -23.5%,
+-27.0% and -4.1% at 160/181/219. At 60 minutes the baseline predicts no pixels
+at thresholds 181 and 219; tail training restores forecast/observed area ratios
+to 11.80% and 15.45% and obtains non-zero CSI.
+
+Low thresholds remain essentially unchanged: mean CSI changes by -0.11% at 16
+and +0.001% at 74. The effect is therefore tail selective rather than a broad
+score shift.
+
+## Final decision
+
+- The cross-translator transfer gate passes.
+- SoftExceedanceAreaLoss is retained as a generic SimVP training component, not
+  an IncepU-only case study.
+- gSTA is not a fully independent backbone. One recurrent-model gate is still
+  desirable before claiming broad architecture generality.
+- Multi-seed gSTA replication is deferred until a recurrent smoke test shows
+  whether the broader generic-loss path is computationally feasible.
+
+See `paired-result-analysis.json` for the exact summary.
