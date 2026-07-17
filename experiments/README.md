@@ -66,6 +66,10 @@ EXP-017 tests whether the fixed tail-area component transfers from SimVP-v1's
 IncepU translator to SimVP-v2's gSTA translator without retuning. It begins
 with a 100-update A4000 numerical and memory smoke test.
 
+EXP-018 is a one-step official OpenSTL ConvLSTM resource gate. It decides
+whether a genuinely recurrent cross-backbone baseline/tail pair is feasible on
+the A4000 before a complete trainer is implemented.
+
 ## Experiment statuses
 
 - `planned`: card exists, not executed;
