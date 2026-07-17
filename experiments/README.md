@@ -88,7 +88,14 @@ calibration boundary.
 EXP-021 performs a read-only hard-versus-soft area audit on both frozen
 ConvLSTM tail checkpoints. It tests whether the stable long-lead overforecast
 comes from a mismatch between the temperature-10 training surrogate and hard
-threshold evaluation before any second component is designed.
+threshold evaluation before any second component is designed. Smoothing
+contributes but does not explain the excess: temperature-10 soft areas also
+overpredict, so temperature annealing alone is not authorized.
+
+EXP-022 evaluates the two frozen ConvLSTM tail checkpoints under diagnostic
+teacher-forcing probabilities from 1.0 to 0.0. It tests whether the remaining
+overforecast is caused by calibrating tail supervision on mostly
+teacher-forced trajectories and evaluating on free autoregressive rollouts.
 
 ## Experiment statuses
 

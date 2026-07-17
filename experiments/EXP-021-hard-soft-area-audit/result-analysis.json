@@ -1,0 +1,78 @@
+{
+  "experiment": "EXP-021",
+  "status": "completed",
+  "checkpoints": [
+    "artifacts/local/exp019_convlstm_tail_seed0_128/last.pt",
+    "artifacts/local/exp020_convlstm_tail_seed1_128/last.pt"
+  ],
+  "samples_per_checkpoint": 1600,
+  "thresholds_raw": [
+    160,
+    181,
+    219
+  ],
+  "temperatures_raw": [
+    2,
+    5,
+    10
+  ],
+  "at_60_minutes": {
+    "seed0": {
+      "official_hard_area_ratio": [
+        1.4583012229854246,
+        2.0791608251552174,
+        4.463610586011342
+      ],
+      "temperature_10_soft_area_ratio": [
+        1.2668955312328267,
+        1.6578521456032114,
+        3.067749006017216
+      ],
+      "temperature_5_soft_area_ratio": [
+        1.408718894837154,
+        1.9940831104827725,
+        4.090010440513208
+      ],
+      "temperature_2_soft_area_ratio": [
+        1.4769259981303424,
+        2.096611145354879,
+        4.478864297610692
+      ]
+    },
+    "seed1": {
+      "official_hard_area_ratio": [
+        1.6502261685374435,
+        2.4168335669937915,
+        4.5978260869565215
+      ],
+      "temperature_10_soft_area_ratio": [
+        1.4046002584472714,
+        1.882750256885994,
+        3.3209455753205885
+      ],
+      "temperature_5_soft_area_ratio": [
+        1.5949039937444134,
+        2.3010596816569433,
+        4.2850980809476615
+      ],
+      "temperature_2_soft_area_ratio": [
+        1.672757436490133,
+        2.4329839416697943,
+        4.6232719100461885
+      ]
+    }
+  },
+  "decision": {
+    "pure_surrogate_gap_hypothesis": "rejected",
+    "surrogate_smoothing_contributes": true,
+    "temperature_annealing_alone_authorized": false,
+    "next_gate": "teacher_forcing_exposure_audit"
+  },
+  "interpretation": [
+    "Temperature-10 soft ratios are closer to one than hard ratios, so smoothing contributes to the apparent hard-threshold excess.",
+    "Temperature-10 soft ratios still substantially exceed one at long lead in both seeds, so the evaluation surrogate mismatch is not the primary cause.",
+    "Sharper diagnostic temperatures approach the hard ratios; they do not show that the frozen model is already calibrated under a sharper surrogate.",
+    "The next hypothesis is autoregressive exposure mismatch because training ends at 92 percent teacher forcing while validation uses zero."
+  ],
+  "caveat": "The original audit used a broadcast tensor comparison for hard counts. Exact official hard ratios here come from the frozen LeadTimeVILMetrics outputs; the script has been corrected to reproduce that scalar comparison in future runs."
+}

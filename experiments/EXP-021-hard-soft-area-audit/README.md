@@ -1,6 +1,10 @@
 # EXP-021: ConvLSTM hard/soft area surrogate audit
 
-Status: `planned`
+Status: `completed`
+
+Current decision: smoothing contributes to the hard-area excess, but the pure
+surrogate-gap hypothesis is rejected. Temperature annealing alone is not
+authorized.
 
 ## Problem
 
@@ -57,3 +61,28 @@ python scripts/audit_convlstm_hard_soft_area.py \
   hypothesis. Treat recurrent overpersistence as a backbone-specific limitation
   or investigate autoregressive exposure instead.
 - Do not introduce a second loss term before this gate is resolved.
+
+## Result
+
+Both frozen tail checkpoints were evaluated on all 200 validation batches. At
+60 minutes, temperature-10 soft forecast-to-observed area ratios for
+160/181/219 are `1.267/1.658/3.068` at seed 0 and
+`1.405/1.883/3.321` at seed 1. These are lower than the official hard ratios,
+so smoothing contributes to the hard-threshold excess.
+
+However, the temperature-10 soft ratios themselves substantially exceed one.
+The model is therefore not calibrated even under its training surrogate during
+fully autoregressive validation. Diagnostic temperatures 5 and 2 move the soft
+ratios toward the hard ratios rather than revealing hidden calibration.
+
+The pure surrogate-gap hypothesis is rejected. A temperature continuation may
+still change a newly trained model, but this audit does not justify it as the
+next experiment. The next gate tests teacher-forcing exposure mismatch.
+
+The first audit used a broadcast threshold tensor for hard counts. This differed
+from the official scalar threshold comparison at quantized boundary values,
+most visibly at threshold 219. The script is corrected; all hard ratios quoted
+in the interpretation use the already frozen official metrics. Soft-count
+results are unaffected.
+
+See `result-analysis.json` for exact values.

@@ -106,9 +106,6 @@ def audit_checkpoint(
     model.load_state_dict(checkpoint["model"])
     model.eval()
 
-    thresholds = torch.tensor(
-        args.thresholds_raw, device=device, dtype=torch.float32
-    ) / 255.0
     criteria = {
         str(float(temperature)): SoftExceedanceAreaLoss(
             thresholds_raw=args.thresholds_raw,
@@ -143,15 +140,17 @@ def audit_checkpoint(
                 model, inputs, targets, mask, args.patch_size
             )
 
-        expanded_thresholds = thresholds.view(1, 1, -1, 1, 1, 1)
-        prediction_values = predictions.float().unsqueeze(2)
-        target_values = targets.float().unsqueeze(2)
-        hard_forecast += (
-            prediction_values >= expanded_thresholds
-        ).sum(dim=(0, 3, 4, 5), dtype=torch.float64)
-        hard_observed += (
-            target_values >= expanded_thresholds
-        ).sum(dim=(0, 3, 4, 5), dtype=torch.float64)
+        # Match LeadTimeVILMetrics exactly. Comparing a tensor against each
+        # Python scalar separately avoids threshold-boundary differences from
+        # tensor-to-tensor broadcasting at quantized VIL values.
+        for threshold_index, raw_threshold in enumerate(args.thresholds_raw):
+            threshold = raw_threshold / 255.0
+            hard_forecast[:, threshold_index] += (
+                predictions.float() >= threshold
+            ).sum(dim=(0, 2, 3, 4), dtype=torch.float64)
+            hard_observed[:, threshold_index] += (
+                targets.float() >= threshold
+            ).sum(dim=(0, 2, 3, 4), dtype=torch.float64)
 
         for key, criterion in criteria.items():
             predicted_counts = criterion.soft_counts(predictions)
