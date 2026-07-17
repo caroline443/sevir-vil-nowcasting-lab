@@ -1,0 +1,44 @@
+{
+  "status": "complete_awaiting_paired_baseline",
+  "model_type": "gSTA",
+  "resolution": 128,
+  "seed": 0,
+  "train_steps": 4000,
+  "optimizer_updates": 4000,
+  "skipped_optimizer_updates": 0,
+  "amp_dtype": "bfloat16",
+  "amp_fp32_fallbacks": 0,
+  "tail_area_weight": 0.0003,
+  "tail_temperature_raw": 10.0,
+  "parameters": 18706497,
+  "peak_allocated_bytes": 9917963264,
+  "wall_seconds": 3359.239569974001,
+  "mean_train_mse": 0.005323858363743056,
+  "mean_train_tail_area_loss": 0.6229806891717017,
+  "validation_csi_mean": 0.3489060962192655,
+  "validation_mse": 0.0025278574398180354,
+  "summary_by_threshold": {
+    "160": {
+      "csi_lead_mean": 0.1883082282990944,
+      "pod_lead_mean": 0.2313329098870037,
+      "sucr_lead_mean": 0.4801216217404812,
+      "csi_60": 0.04515886161722632,
+      "area_ratio_60": 0.16282459373429387
+    },
+    "181": {
+      "csi_lead_mean": 0.14403130183596907,
+      "pod_lead_mean": 0.1772216498035748,
+      "sucr_lead_mean": 0.40675475350544593,
+      "csi_60": 0.02150144105402809,
+      "area_ratio_60": 0.11801522130983377
+    },
+    "219": {
+      "csi_lead_mean": 0.09185685696188546,
+      "pod_lead_mean": 0.12220955414264713,
+      "sucr_lead_mean": 0.24910656404634066,
+      "csi_60": 0.01033912324234905,
+      "area_ratio_60": 0.15453686200378072
+    }
+  },
+  "decision": "do_not_claim_transfer_until_paired_gsta_baseline_metrics_are_available"
+}

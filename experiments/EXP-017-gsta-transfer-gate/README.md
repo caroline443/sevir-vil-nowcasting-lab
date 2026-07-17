@@ -2,6 +2,10 @@
 
 Status: `running` (100-update smoke passed; 4000-update pair authorized)
 
+Current evidence: the 4000-update tail run is complete and numerically healthy;
+the paired baseline metrics have not yet been supplied, so the transfer claim
+remains unresolved.
+
 ## Question
 
 Does the fixed SoftExceedanceAreaLoss mechanism transfer from SimVP-v1 IncepU
@@ -107,3 +111,17 @@ Continue the applied-Q2 path only if the fixed tail component improves severe
 CSI and long-lead area survival on gSTA without a materially larger MSE penalty.
 Failure stops the generic-loss claim and returns the project to an IncepU-only
 case study.
+
+## Tail run received
+
+The seed-0 gSTA tail run completed 4000/4000 updates with zero skipped updates
+or FP32 fallbacks. It used 9.92 GB peak allocated memory and took 3359 seconds.
+Validation mean CSI is 0.34891 and MSE is 0.002528. At 60 minutes, predicted to
+observed area ratios are 16.28%, 11.80% and 15.45% for thresholds 160, 181 and
+219. Unlike the undertrained smoke test, this is a valid bounded-protocol model
+result.
+
+These absolute scores do not establish transfer because gSTA can differ from
+IncepU even under MSE. The experiment remains `running` until
+`artifacts/local/exp017_gsta_baseline_seed0_128/metrics.json` is paired with
+this output. See `tail-seed0-result.json` for the compact record.
