@@ -72,7 +72,15 @@ the A4000 before a complete trainer is implemented.
 
 EXP-019 runs the frozen seed-0 ConvLSTM baseline/tail pair with official linear
 scheduled sampling and fully autoregressive validation. It is the first true
-cross-backbone transfer gate.
+cross-backbone transfer gate. The gate passes: overall CSI improves by 23.54%
+and MSE falls by 10.73%, with severe CSI gains at all leads. Long-lead severe
+area overforecasting is retained as an explicit calibration limitation, and a
+paired replication is required before the result becomes a central paper
+claim.
+
+EXP-020 repeats the frozen ConvLSTM pair at seed 1 before any coefficient
+calibration. It determines whether both the large cross-backbone gain and the
+long-lead overforecast limitation are reproducible.
 
 ## Experiment statuses
 

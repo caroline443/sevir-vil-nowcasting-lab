@@ -1,0 +1,84 @@
+{
+  "experiment": "EXP-019",
+  "status": "completed",
+  "model": "OpenSTL ConvLSTM",
+  "resolution": 128,
+  "seed": 0,
+  "overall": {
+    "baseline_csi_mean": 0.28730640700571786,
+    "tail_csi_mean": 0.3549400590863223,
+    "csi_absolute_delta": 0.06763365208060446,
+    "csi_relative_delta": 0.2354060001149172,
+    "baseline_mse": 0.0033156666045063804,
+    "tail_mse": 0.002959906123660403,
+    "mse_relative_delta": -0.10729681939748015,
+    "csi_mean_improved_leads": 12
+  },
+  "by_threshold": {
+    "16": {
+      "csi_relative_delta": 0.026345356998734637,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 0.06070041182956554,
+      "sucr_relative_delta": -0.024369299616363138,
+      "baseline_area_ratio_60": 0.9983367625113301,
+      "tail_area_ratio_60": 1.2274072312575606
+    },
+    "74": {
+      "csi_relative_delta": 0.06999660634963556,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 0.06263430952052063,
+      "sucr_relative_delta": 0.023461700644167083,
+      "baseline_area_ratio_60": 0.7967751286693655,
+      "tail_area_ratio_60": 0.9084743780133043
+    },
+    "133": {
+      "csi_relative_delta": 0.31734218730622343,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 0.5286073985302904,
+      "sucr_relative_delta": -0.09060193210224488,
+      "baseline_area_ratio_60": 0.2885635737773089,
+      "tail_area_ratio_60": 1.0564313052049563
+    },
+    "160": {
+      "csi_relative_delta": 0.9276005177326008,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 1.5504672931808603,
+      "sucr_relative_delta": -0.07821034177662967,
+      "baseline_area_ratio_60": 0.1534092812866477,
+      "tail_area_ratio_60": 1.4583012229854246
+    },
+    "181": {
+      "csi_relative_delta": 1.7051696419119664,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 2.907220379069182,
+      "sucr_relative_delta": 0.029870606203056482,
+      "baseline_area_ratio_60": 0.16803524934908873,
+      "tail_area_ratio_60": 2.0791608251552174
+    },
+    "219": {
+      "csi_relative_delta": 3.8531147015064953,
+      "csi_improved_leads": 12,
+      "pod_relative_delta": 6.706833855248661,
+      "sucr_relative_delta": -0.11484503389333833,
+      "baseline_area_ratio_60": 0.09640831758034027,
+      "tail_area_ratio_60": 4.463610586011342
+    }
+  },
+  "long_lead_bias": {
+    "baseline_mean_prediction_minus_target_60": -0.004820218081586065,
+    "tail_mean_prediction_minus_target_60": 0.0046500329044647515,
+    "interpretation": "The tail component corrects baseline underpersistence but overpredicts severe area at 60 minutes."
+  },
+  "decision": {
+    "cross_backbone_transfer": "pass",
+    "architecture_portability_under_bounded_protocol": "supported",
+    "universal_calibration": "not_supported",
+    "replication_required": true,
+    "next_gate": "convlstm_seed1_paired_replication"
+  },
+  "limitations": [
+    "ConvLSTM transfer evidence currently uses one seed.",
+    "The 4000-update 128-resolution protocol is a bounded development protocol, not a full native-resolution reproduction.",
+    "The fixed coefficient overpredicts long-lead severe area on ConvLSTM despite improving CSI and MSE."
+  ]
+}

@@ -1,6 +1,10 @@
 # EXP-019: ConvLSTM cross-backbone transfer gate
 
-Status: `running` (trainer smoke passed; seed-0 pair authorized)
+Status: `completed`
+
+Current decision: the frozen tail-area component transfers to the official
+OpenSTL ConvLSTM under the bounded seed-0 protocol without retuning. The gate
+passes, but long-lead severe-area overforecasting is now an explicit limitation.
 
 ## Question
 
@@ -104,3 +108,62 @@ python scripts/train_openstl_convlstm.py \
   bounded MSE cost and without destroying low-threshold skill.
 - Failure rejects broad cross-backbone generality, even though cross-translator
   SimVP transfer has passed.
+
+## Final paired result
+
+Both runs completed 4000/4000 optimizer updates with identical final
+teacher-forcing probability `0.91999999999992`, the same seed, data order,
+validation subset and pinned ConvLSTM source. The baseline used 2.310 GB peak
+allocated memory and took 2859.8 seconds; the tail run used 2.311 GB and took
+2913.1 seconds.
+
+The fixed tail component raises overall validation mean CSI from `0.287306` to
+`0.354940` (`+0.067634`, `+23.54%` relative). Unlike the IncepU and gSTA
+transfer results, MSE also improves, from `0.00331567` to `0.00295991`
+(`-10.73%`).
+
+Lead-mean CSI improves at all 12 leads for every reported threshold. Relative
+CSI gains are:
+
+- threshold 16: `+2.63%`;
+- threshold 74: `+7.00%`;
+- threshold 133: `+31.73%`;
+- threshold 160: `+92.76%`;
+- threshold 181: `+170.52%`;
+- threshold 219: `+385.31%`.
+
+At severe thresholds 160/181/219, mean POD increases by `155.05%`, `290.72%`
+and `670.68%`. Mean SUCR changes by `-7.82%`, `+2.99%` and `-11.48%`.
+Therefore the severe CSI gains are not produced by precision collapse alone.
+
+## Important boundary
+
+The recurrent baseline is strongly underpersistent at long lead, while the
+tail model crosses into overpersistence. At 60 minutes, forecast-to-observed
+area ratios change as follows:
+
+- threshold 160: `0.153` to `1.458`;
+- threshold 181: `0.168` to `2.079`;
+- threshold 219: `0.096` to `4.464`.
+
+The 60-minute domain-mean prediction bias changes from `-0.00482` to
+`+0.00465` in normalized VIL units. This does not invalidate the CSI result:
+60-minute CSI remains higher at every severe threshold, and aggregate MSE is
+lower. It does show that the fixed coefficient is not perfectly calibrated for
+ConvLSTM's recurrent dynamics.
+
+## Final decision
+
+- The true cross-backbone transfer gate passes.
+- Evidence now covers two SimVP translators and one recurrent ConvLSTM
+  backbone with no backbone-specific retuning.
+- The result supports architecture portability under the bounded protocol, not
+  a claim of universal calibration or full-resolution SOTA.
+- One ConvLSTM paired replication is required before this result is used as a
+  central paper claim.
+- A new corrective module is not authorized from this result. The observed
+  long-lead overforecast is first treated as a limitation and calibration
+  question, so the paper remains focused on the diagnosed tail-abstention
+  problem and its lightweight training remedy.
+
+See `paired-result-analysis.json` for the exact summary.
