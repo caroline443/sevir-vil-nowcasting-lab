@@ -1,0 +1,50 @@
+{
+  "experiment": "EXP-024",
+  "status": "completed",
+  "manifest": {
+    "sha256": "cd87c9df175cdf25c77d48da052e2650ffb78d722c34298c1a37e01a3a849630",
+    "total_windows": 56937,
+    "window_counts": {
+      "train": 35718,
+      "val": 9060,
+      "test": 12159
+    },
+    "unique_event_counts": {
+      "train": 11906,
+      "val": 3020,
+      "test": 4053
+    },
+    "cross_split_event_count": 0,
+    "duplicate_window_count": 0,
+    "malformed_event_window_count": 0,
+    "integrity": "pass"
+  },
+  "throughput": {
+    "resolution": 384,
+    "batch_size": 1,
+    "training_seconds_per_batch": 0.4431584572700376,
+    "validation_seconds_per_batch": 0.24461240268021356,
+    "peak_allocated_bytes": 9794448384,
+    "measured_training_batches": 200,
+    "measured_validation_batches": 50,
+    "measured_wall_seconds": 101.92093579599168
+  },
+  "projection": {
+    "train_epoch_seconds": 15828.733776771203,
+    "train_epoch_hours": 4.396870493547556,
+    "validation_seconds": 2216.1883682827347,
+    "validation_hours": 0.6156078800785374,
+    "train_plus_validation_epoch_hours": 5.012478373626093,
+    "three_epoch_model_hours": 15.037435120878282,
+    "three_epoch_pair_per_seed_hours": 30.074870241756564,
+    "three_seed_pair_hours": 90.2246107252697,
+    "three_seed_pair_days": 3.7593587802195705,
+    "three_epoch_optimizer_updates": 107154
+  },
+  "decision": {
+    "maximum_configured_epochs": 3,
+    "manual_gate_after_epoch": 1,
+    "rent_5090_now": false,
+    "next_experiment": "EXP-025 seed0 native-resolution paired epoch-1 gate"
+  }
+}

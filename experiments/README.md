@@ -112,7 +112,13 @@ standalone validation metrics match exactly.
 EXP-024 freezes the exact manifest checksum and event/window counts, then runs
 a 200-update/50-validation-batch native-resolution throughput measurement.
 Those timings, not the very short EXP-023 gate, determine the A4000 versus
-rented-5090 budget.
+rented-5090 budget. The manifest passes; a three-epoch three-seed pair is
+projected at 90.22 A4000 hours, so a manual seed-0 gate precedes continuation.
+
+EXP-025 begins the publishable native-resolution seed-0 SimVP baseline/tail
+pair. Both are configured for three epochs but stop after epoch 1. Accepted
+checkpoints remain resumable parts of the final trajectory; test data stay
+locked.
 
 ## Experiment statuses
 
