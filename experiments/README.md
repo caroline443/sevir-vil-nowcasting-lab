@@ -106,7 +106,13 @@ EXP-023 is the first paper-protocol infrastructure gate. It runs the frozen
 tail method with official SimVP at native 384 resolution, deliberately stops
 after one short epoch, resumes to the second, and verifies global metrics,
 validation selection and standalone checkpoint evaluation. Gate scores are
-discarded.
+discarded. The gate passes at 9.79 GB peak training allocation; resumed and
+standalone validation metrics match exactly.
+
+EXP-024 freezes the exact manifest checksum and event/window counts, then runs
+a 200-update/50-validation-batch native-resolution throughput measurement.
+Those timings, not the very short EXP-023 gate, determine the A4000 versus
+rented-5090 budget.
 
 ## Experiment statuses
 

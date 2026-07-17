@@ -1,6 +1,9 @@
 # EXP-023: paper SimVP 384 trainer gate
 
-Status: `planned`
+Status: `completed`
+
+Current decision: the native-resolution paper trainer gate passes. Gate scores
+are discarded.
 
 ## Purpose
 
@@ -99,3 +102,28 @@ python scripts/evaluate_paper_simvp.py \
 
 Passing this gate authorizes runtime measurement and final-budget planning, not
 an immediate multi-seed long run.
+
+## Result
+
+The deliberate partial run completed epoch 1 at global step 10 and wrote
+recoverable `last.pt` and selected `best.pt` files. The resumed invocation
+continued to epoch 2 and global step 20 with two intact history records:
+
+- `completed_epochs`: 2;
+- `training_complete`: true;
+- best epoch: 2;
+- peak allocated training memory: 9,793,338,368 bytes (9.79 GB decimal);
+- resumed invocation wall time: 6.81 seconds;
+- parameters: 9,254,209.
+
+The standalone evaluator loaded `best.pt`, evaluated the same five validation
+samples and reproduced MSE, MAE, `mcsi_global`, `mcsi_lead_avg` and every
+threshold metric exactly. It recorded checkpoint SHA-256
+`0d6cfe7c8d2ceb9cbd860ec67245c117d05e04ef58e4a83950c05393777107d0`.
+Evaluation peak allocation was 3.02 GB and no test data were accessed.
+
+The very low CSI values are expected after only 20 updates and are not method
+evidence. The gate passes all infrastructure, memory, resume, selection and
+metric-schema requirements.
+
+See `result-analysis.json` for the compact record.

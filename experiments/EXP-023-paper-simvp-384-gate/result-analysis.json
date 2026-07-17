@@ -1,0 +1,31 @@
+{
+  "experiment": "EXP-023",
+  "status": "completed",
+  "resolution": 384,
+  "model": "OpenSTL SimVP IncepU",
+  "variant": "tail_area",
+  "configured_epochs": 2,
+  "completed_epochs": 2,
+  "global_step": 20,
+  "resume_gate": "pass",
+  "selection_gate": "pass",
+  "metric_schema_gate": "pass",
+  "standalone_evaluation_gate": "pass",
+  "best_epoch": 2,
+  "peak_allocated_training_bytes": 9793338368,
+  "peak_allocated_evaluation_bytes": 3019073024,
+  "resumed_invocation_wall_seconds": 6.807478192000417,
+  "standalone_evaluation_wall_seconds": 1.7574906770023517,
+  "checkpoint_sha256": "0d6cfe7c8d2ceb9cbd860ec67245c117d05e04ef58e4a83950c05393777107d0",
+  "best_validation_metrics": {
+    "mse": 0.005838761061292004,
+    "mae": 0.06501496318313811,
+    "mcsi_global": 0.0077180817760630375,
+    "mcsi_lead_avg": 0.00579461926758092
+  },
+  "decision": {
+    "native_resolution_pipeline": "pass",
+    "scores_publishable": false,
+    "next_gate": "manifest_freeze_and_stable_throughput_measurement"
+  }
+}

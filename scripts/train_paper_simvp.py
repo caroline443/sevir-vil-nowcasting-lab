@@ -324,6 +324,7 @@ def main() -> int:
     started_at = time.perf_counter()
     for epoch in range(start_epoch, end_epoch + 1):
         model.train()
+        epoch_training_started = time.perf_counter()
         epoch_objective_sum = 0.0
         epoch_mse_sum = 0.0
         epoch_tail_sum = 0.0
@@ -371,12 +372,17 @@ def main() -> int:
                     flush=True,
                 )
 
+        torch.cuda.synchronize(device)
+        training_wall_seconds = time.perf_counter() - epoch_training_started
+        validation_started = time.perf_counter()
         validation, completed_val_batches = evaluate(
             model,
             val_loader,
             device,
             validation_batches,
         )
+        torch.cuda.synchronize(device)
+        validation_wall_seconds = time.perf_counter() - validation_started
         candidate = float(validation[args.selection_metric])
         improved = is_better(args.selection_metric, candidate, best_metric)
         if improved:
@@ -393,7 +399,15 @@ def main() -> int:
             "mean_train_tail_area_loss": (
                 epoch_tail_sum / completed_train_batches
             ),
+            "training_wall_seconds": training_wall_seconds,
+            "training_seconds_per_batch": (
+                training_wall_seconds / completed_train_batches
+            ),
             "validation_batches": completed_val_batches,
+            "validation_wall_seconds": validation_wall_seconds,
+            "validation_seconds_per_batch": (
+                validation_wall_seconds / completed_val_batches
+            ),
             "validation_mse": validation["mse"],
             "validation_mae": validation["mae"],
             "validation_mcsi_global": validation["mcsi_global"],
@@ -449,6 +463,10 @@ def main() -> int:
         "completed_epochs": int(history[-1]["epoch"]),
         "training_complete": int(history[-1]["epoch"]) == args.epochs,
         "global_step": global_step,
+        "train_samples_available": len(train_loader.dataset),
+        "validation_samples_available": len(val_loader.dataset),
+        "train_batches_per_epoch": train_batches_per_epoch,
+        "validation_batches_per_evaluation": validation_batches,
         "best_epoch": best_epoch,
         "best_metric": best_metric,
         "selection_metric": args.selection_metric,
