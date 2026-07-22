@@ -1,0 +1,104 @@
+{
+  "experiment": "EXP-025",
+  "status": "epoch_1_completed_epochs_2_3_pending",
+  "protocol": {
+    "model": "OpenSTL SimVP IncepU",
+    "resolution": 384,
+    "input_frames": 13,
+    "output_frames": 12,
+    "batch_size": 1,
+    "seed": 0,
+    "configured_epochs": 3,
+    "completed_epochs": 1,
+    "train_windows": 35718,
+    "validation_windows": 9060,
+    "selection_metric": "mcsi_global",
+    "test_accessed": false
+  },
+  "method": {
+    "tail_area_weight": 0.0003,
+    "temperature_raw": 10.0,
+    "thresholds_raw": [160, 181, 219]
+  },
+  "epoch_1": {
+    "baseline": {
+      "mcsi_global": 0.31451156881280035,
+      "mcsi_lead_avg": 0.313179090140687,
+      "mse": 0.003978702710958918,
+      "mae": 0.036015036357876624,
+      "global_csi": {
+        "16": 0.7477038664454471,
+        "74": 0.6308904315927212,
+        "133": 0.24457277136644726,
+        "160": 0.13603107789557586,
+        "181": 0.09351665734652237,
+        "219": 0.034354608230088554
+      }
+    },
+    "tail_area": {
+      "mcsi_global": 0.3246269296256862,
+      "mcsi_lead_avg": 0.3248791194608542,
+      "mse": 0.004078925179654285,
+      "mae": 0.03729443657809312,
+      "global_csi": {
+        "16": 0.7479392148641945,
+        "74": 0.6175619842266826,
+        "133": 0.24053178217056714,
+        "160": 0.16126619320282232,
+        "181": 0.12431510287240749,
+        "219": 0.056147300417443
+      }
+    },
+    "relative_change_percent": {
+      "mcsi_global": 3.2162126344250863,
+      "mcsi_lead_avg": 3.735890960955035,
+      "mse": 2.518973544299108,
+      "mae": 3.5524057438211853,
+      "global_csi": {
+        "16": 0.03147615377010471,
+        "74": -2.112640594721038,
+        "133": -1.6522645482171971,
+        "160": 18.550992683170662,
+        "181": 32.933646689019966,
+        "219": 63.43455306315473
+      },
+      "global_pod": {
+        "160": 23.45983719169884,
+        "181": 39.13298970202676,
+        "219": 72.09454899902528
+      },
+      "global_sucr": {
+        "160": -14.438958540040526,
+        "181": -20.210435792165494,
+        "219": -39.85783762833768
+      }
+    },
+    "lead_mcsi_relative_change_percent": {
+      "5": -0.9477620484497629,
+      "10": 1.1676558370508072,
+      "15": 3.7248003687231135,
+      "20": 6.073313836927063,
+      "25": 7.9181733471712645,
+      "30": 7.185273588920538,
+      "35": 6.478475268083961,
+      "40": 5.148120986463112,
+      "45": 4.058905761131304,
+      "50": 3.6780297867909484,
+      "55": 3.1147886878862163,
+      "60": 2.856135073498911
+    },
+    "threshold_219_at_60_minutes": {
+      "baseline_forecast_pixels": 0,
+      "tail_area_forecast_pixels": 42543,
+      "observed_pixels": 617417
+    }
+  },
+  "decision": {
+    "epoch_1_gate": "pass",
+    "resume_both_arms_to_epoch_3": true,
+    "change_hyperparameters": false,
+    "evaluate_test_now": false,
+    "claim_boundary": "positive_full_validation_seed0_result_not_yet_publishable"
+  }
+}
+

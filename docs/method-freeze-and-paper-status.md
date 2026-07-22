@@ -1,6 +1,6 @@
 # Method freeze and paper status
 
-Date: 2026-07-17
+Date: 2026-07-22
 
 ## Working thesis
 
@@ -37,6 +37,12 @@ second calibration loss is part of the frozen method.
   development protocol.
 - Spatial diagnostics show that most recovered severe pixels are near observed
   storms rather than remote hallucinations.
+- Native-resolution full-coverage seed-0 epoch 1 passes the continuation gate:
+  validation global mCSI rises from 0.31451 to 0.32463 (+3.22%), with the
+  strongest relative CSI gains at thresholds 160/181/219
+  (+18.55%/+32.93%/+63.43%). MSE and MAE worsen by 2.52% and 3.55%, and
+  severe-threshold SUCR falls, so this is a recall/false-alarm tradeoff rather
+  than uniform dominance.
 
 ## Diagnosed boundary
 
@@ -62,21 +68,29 @@ new model module is required.
 - Operational nowcasting readiness.
 - Statistical superiority under a complete publication protocol.
 
+## Native-resolution paper run in progress
+
+The seed-0 baseline and method have each completed the first of three frozen
+epochs over all 35,718 training windows and all 9,060 validation windows. Both
+must resume to epoch 3 before their independently validation-selected `best.pt`
+checkpoints can be compared. The test split remains untouched. See EXP-025.
+
 ## Remaining publication work
 
-1. Freeze a mainstream 13-to-12 SEVIR evaluation split and reporting table.
-2. Move the principal experiments from 128 to the declared publication
-   resolution.
+1. Finish the frozen native-resolution seed-0 pair and inspect convergence.
+2. Decide the minimum replication count from the completed seed-0 effect and
+   compute budget; do not tune on the test split.
 3. Use training schedules consistent with each model and budget; recurrent
    schedules must reach low or zero teacher forcing.
-4. Run the final baseline/method pairs and selected strong controls.
+4. Run the final selected cross-backbone control only after the principal pair.
 5. Produce threshold-by-lead figures, qualitative cases, efficiency statistics
    and multi-seed summaries.
 6. Write the paper around one coherent problem and one lightweight solution.
 
 ## Publication assessment
 
-The current evidence supports continuing toward an applied Q2 journal. The
+The current evidence supports continuing toward an applied Q2 journal, but the
+native-resolution result is still one validation seed at one epoch. The
 algorithmic change is lightweight, so acceptance depends on disciplined problem
 diagnosis, fair controls, cross-backbone evidence and a credible full
 publication protocol. A CCF-B claim is not currently supported.

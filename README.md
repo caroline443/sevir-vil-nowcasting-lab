@@ -17,8 +17,9 @@ This repository is deliberately **problem-first**. A model change is added only 
 - EXP-006: persistence confirms intensity-selective tail collapse.
 - EXP-007: training-budget control confirms persistent severe-tail extinction.
 - EXP-009: BF16 numerical protocol accepted after seed-dependent FP16 overflow.
-- EXP-010: frozen three-seed BF16 paired replication pending.
-- Innovation stage: five problem-matched solution paths documented; soft exceedance-area calibration is the first recommended test.
+- EXP-010: frozen three-seed BF16 paired replication completed.
+- EXP-025: native-resolution full-coverage seed-0 pair passed the epoch-1 continuation gate; epochs 2-3 are pending.
+- Frozen innovation: soft exceedance-area calibration targets severe-echo abstention without changing the forecasting backbone.
 
 ## Repository layout
 
@@ -65,6 +66,7 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [EXP-010: BF16 paired replication](experiments/EXP-010-bf16-paired-replication/README.md)
 - [Validated problem and solution paths](docs/validated-problem-and-solution-paths.md)
 - [Paper-facing evaluation protocol](docs/evaluation-protocol.md)
+- [EXP-025: native-resolution paper SimVP seed-0 pair](experiments/EXP-025-paper-simvp-384-seed0/README.md)
 
 ## Implementation references
 
