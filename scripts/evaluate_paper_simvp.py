@@ -18,6 +18,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from sevir_nowcasting.data import SevirVILWindowDataset
+from sevir_nowcasting.event_metrics import EventVILStats
 from sevir_nowcasting.metrics import LeadTimeVILMetrics
 from train_openstl_simvp import build_model, predict_12
 
@@ -28,6 +29,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--event-stats-output",
+        type=Path,
+        help="optional .npz output for event-level paired bootstrap",
+    )
     parser.add_argument("--split", choices=("val", "test"), default="val")
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--workers", type=int, default=2)
@@ -52,6 +58,14 @@ def parse_args() -> argparse.Namespace:
         parser.error("test evaluation requires --confirm-final-test")
     if args.output.exists():
         parser.error(f"refusing to overwrite existing evaluation: {args.output}")
+    if args.event_stats_output is not None:
+        if args.event_stats_output.suffix != ".npz":
+            parser.error("--event-stats-output must use the .npz suffix")
+        if args.event_stats_output.exists():
+            parser.error(
+                "refusing to overwrite existing event statistics: "
+                f"{args.event_stats_output}"
+            )
     return args
 
 
@@ -102,6 +116,7 @@ def main() -> int:
     model.eval()
 
     metrics = LeadTimeVILMetrics(output_length=12)
+    event_stats = EventVILStats(output_length=12)
     samples = 0
     torch.cuda.reset_peak_memory_stats(device)
     started_at = time.perf_counter()
@@ -114,6 +129,7 @@ def main() -> int:
             with torch.autocast("cuda", dtype=torch.bfloat16):
                 predictions = predict_12(model, inputs)
             metrics.update(predictions, targets)
+            event_stats.update(batch["event_id"], predictions, targets)
             samples += inputs.shape[0]
             completed = batch_index + 1
             if completed == 1 or completed % args.log_every == 0:
@@ -130,6 +146,8 @@ def main() -> int:
                     flush=True,
                 )
     torch.cuda.synchronize(device)
+    if args.event_stats_output is not None:
+        event_stats.save(args.event_stats_output)
     result = {
         "ok": True,
         "purpose": "paper_protocol_checkpoint_evaluation",
@@ -145,6 +163,16 @@ def main() -> int:
         "amp_dtype": "bfloat16",
         "peak_allocated_bytes": torch.cuda.max_memory_allocated(device),
         "wall_seconds": time.perf_counter() - started_at,
+        "event_stats_output": (
+            str(args.event_stats_output)
+            if args.event_stats_output is not None
+            else None
+        ),
+        "event_stats_sha256": (
+            file_sha256(args.event_stats_output)
+            if args.event_stats_output is not None
+            else None
+        ),
         "metrics": metrics.compute(),
         "caveat": (
             "Validation may be repeated for engineering checks. Test output "
