@@ -14,11 +14,12 @@ not by model novelty.
 
 ## P0: publication gates
 
-### P0.1 Finish the current native main pair
+### P0.1 Finish the current native main pair — completed
 
-Complete EXP-025 seed 0 for baseline and tail-area SimVP IncepU through the
-configured three epochs. Select `best.pt` independently by validation
-`mcsi_global`; do not inspect or use test results.
+EXP-025 seed 0 completed three epochs for baseline and tail-area SimVP IncepU.
+Both selected epoch 3 independently by validation `mcsi_global`. The method
+improved global mCSI by 6.01% and lead-average mCSI by 7.00%, while test remains
+untouched. This passes the native replication gate.
 
 ### P0.2 Native replication
 
@@ -99,4 +100,3 @@ MSE and tail-area SimVP; fair PM/FACL controls; event-bootstrap confidence
 intervals; sensitivity table; one cross-architecture confirmation; qualitative
 and efficiency figures; and a manuscript that explicitly states the
 recall/false-alarm limitation and does not claim universal SOTA.
-

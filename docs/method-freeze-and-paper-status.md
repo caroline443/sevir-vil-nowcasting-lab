@@ -70,10 +70,12 @@ new model module is required.
 
 ## Native-resolution paper run in progress
 
-The seed-0 baseline and method have each completed the first of three frozen
-epochs over all 35,718 training windows and all 9,060 validation windows. Both
-must resume to epoch 3 before their independently validation-selected `best.pt`
-checkpoints can be compared. The test split remains untouched. See EXP-025.
+The seed-0 baseline and method completed all three frozen epochs over all
+35,718 training windows and all 9,060 validation windows. Both independently
+selected epoch 3. The method improves validation global mCSI by 6.01% and
+lead-average mCSI by 7.00%; CSI gains increase with severity and lead time.
+MSE rises 1.22%, MAE falls 0.11%, and severe-threshold SUCR declines. The test
+split remains untouched. Native seed 1 is now authorized. See EXP-025.
 
 ## Remaining publication work
 
