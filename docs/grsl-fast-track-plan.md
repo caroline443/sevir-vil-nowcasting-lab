@@ -14,9 +14,11 @@ backbone is part of the GRSL contribution.
 
 ## Required work before submission
 
-1. Complete the native 384 seed-1 baseline/method pair.
+1. Complete the native 384 seed-1 baseline/method pair. **Completed.**
 2. Confirm that the severe-threshold validation direction replicates.
+   **Passed.**
 3. Freeze both seeds' independently validation-selected checkpoints.
+   **Frozen.**
 4. Evaluate the test split exactly once for persistence and the two paired
    SimVP variants.
 5. Save event-grouped sufficient statistics during the same test pass.
@@ -45,10 +47,10 @@ recall/false-alarm tradeoff.
 
 ## Test discipline
 
-The test split remains untouched until seed 1 passes the frozen validation
-gate. Test results must not change the loss weight, thresholds, temperature,
-epoch count or selected checkpoints. Evaluation outputs and event-statistic
-sidecars refuse overwrite.
+Seed 1 passed the frozen validation gate and the one-time test is authorized.
+Test results must not change the loss weight, thresholds, temperature, epoch
+count or selected checkpoints. Evaluation outputs and event-statistic sidecars
+refuse overwrite.
 
 ## TGRS extension boundary
 

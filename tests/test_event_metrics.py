@@ -61,6 +61,12 @@ class EventMetricsTest(unittest.TestCase):
 
         interval = result["difference_intervals"]["csi_219"]
         self.assertEqual(result["event_count"], 2)
+        self.assertEqual(
+            result["seed_aggregate"]["csi_219"]["difference_mean"], 1.0
+        )
+        self.assertIsNone(
+            result["seed_aggregate"]["csi_219"]["difference_sample_std"]
+        )
         self.assertGreater(interval["lower_95"], 0.0)
         self.assertEqual(interval["probability_difference_gt_zero"], 1.0)
 

@@ -1,0 +1,73 @@
+{
+  "experiment": "EXP-026",
+  "status": "completed",
+  "protocol": {
+    "model": "OpenSTL SimVP IncepU",
+    "resolution": 384,
+    "batch_size": 1,
+    "seed": 1,
+    "configured_epochs": 3,
+    "completed_epochs": 3,
+    "train_windows": 35718,
+    "validation_windows": 9060,
+    "baseline_best_epoch": 2,
+    "tail_best_epoch": 3,
+    "test_accessed": false
+  },
+  "best_validation": {
+    "baseline": {
+      "mcsi_global": 0.38727778382897116,
+      "mcsi_lead_avg": 0.38269864164780787,
+      "mse": 0.003425089102357981,
+      "mae": 0.027758407072636517
+    },
+    "tail_area": {
+      "mcsi_global": 0.4074866208474388,
+      "mcsi_lead_avg": 0.4069210672199934,
+      "mse": 0.003262198124331386,
+      "mae": 0.02625087351037658
+    },
+    "relative_change_percent": {
+      "mcsi_global": 5.218176167676125,
+      "mcsi_lead_avg": 6.329373281255868,
+      "mse": -4.755817240329718,
+      "mae": -5.430908042796245,
+      "global_csi": {
+        "16": 0.23834442560206615,
+        "74": 1.139814233655101,
+        "133": 4.892167223246302,
+        "160": 12.045826899801781,
+        "181": 20.80658980834553,
+        "219": 21.447925511335963
+      },
+      "global_pod": {
+        "160": 19.763933658490785,
+        "181": 33.38471256834605,
+        "219": 38.504859019371466
+      },
+      "global_sucr": {
+        "160": -10.903131774793362,
+        "181": -17.114729784288475,
+        "219": -29.072213409121396
+      }
+    },
+    "forecast_to_observed_area_ratio_at_60_minutes": {
+      "baseline": {
+        "160": 0.06270831735728545,
+        "181": 0.009183824909473325,
+        "219": 0.0
+      },
+      "tail_area": {
+        "160": 0.24304899678664987,
+        "181": 0.21421639824049865,
+        "219": 0.1760706297364666
+      }
+    }
+  },
+  "decision": {
+    "native_seed1_replication_gate": "pass",
+    "freeze_configuration": true,
+    "authorize_one_time_test": true,
+    "change_hyperparameters": false
+  }
+}

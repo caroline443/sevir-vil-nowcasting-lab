@@ -232,6 +232,23 @@ def _validate_paired_stats(
             )
 
 
+def _flatten_point_metrics(
+    metrics: dict[str, np.ndarray],
+    thresholds: Sequence[int],
+) -> dict[str, float]:
+    result = {
+        "mse": float(metrics["mse"][0]),
+        "mae": float(metrics["mae"][0]),
+        "mcsi_global": float(metrics["mcsi_global"][0]),
+    }
+    for metric_name in ("csi", "pod", "sucr"):
+        for threshold_index, threshold in enumerate(thresholds):
+            result[f"{metric_name}_{threshold}"] = float(
+                metrics[metric_name][0, threshold_index]
+            )
+    return result
+
+
 def paired_event_bootstrap(
     baseline_paths: Sequence[str | Path],
     proposed_paths: Sequence[str | Path],
@@ -253,6 +270,56 @@ def paired_event_bootstrap(
 
     point_baseline = [_weighted_metrics(stats, point_weights) for stats in baseline]
     point_proposed = [_weighted_metrics(stats, point_weights) for stats in proposed]
+    flattened_baseline = [
+        _flatten_point_metrics(metrics, thresholds) for metrics in point_baseline
+    ]
+    flattened_proposed = [
+        _flatten_point_metrics(metrics, thresholds) for metrics in point_proposed
+    ]
+    per_seed: list[dict[str, object]] = []
+    for seed_index, (baseline_metrics, proposed_metrics) in enumerate(
+        zip(flattened_baseline, flattened_proposed, strict=True)
+    ):
+        per_seed.append(
+            {
+                "pair_index": seed_index,
+                "baseline": baseline_metrics,
+                "proposed": proposed_metrics,
+                "difference": {
+                    name: proposed_metrics[name] - baseline_metrics[name]
+                    for name in baseline_metrics
+                },
+            }
+        )
+    seed_aggregate: dict[str, object] = {}
+    for name in flattened_baseline[0]:
+        baseline_values = np.asarray(
+            [metrics[name] for metrics in flattened_baseline]
+        )
+        proposed_values = np.asarray(
+            [metrics[name] for metrics in flattened_proposed]
+        )
+        differences = proposed_values - baseline_values
+        seed_aggregate[name] = {
+            "baseline_mean": float(baseline_values.mean()),
+            "baseline_sample_std": (
+                float(baseline_values.std(ddof=1))
+                if len(baseline_values) > 1
+                else None
+            ),
+            "proposed_mean": float(proposed_values.mean()),
+            "proposed_sample_std": (
+                float(proposed_values.std(ddof=1))
+                if len(proposed_values) > 1
+                else None
+            ),
+            "difference_mean": float(differences.mean()),
+            "difference_sample_std": (
+                float(differences.std(ddof=1))
+                if len(differences) > 1
+                else None
+            ),
+        }
     metric_names = ("mse", "mae", "mcsi_global")
     point: dict[str, object] = {}
     for name in metric_names:
@@ -353,6 +420,8 @@ def paired_event_bootstrap(
         "repetitions": repetitions,
         "random_seed": seed,
         "thresholds_raw": thresholds,
+        "per_seed": per_seed,
+        "seed_aggregate": seed_aggregate,
         "point_estimates": point,
         "difference_intervals": intervals,
         "interpretation": "Differences are proposed minus baseline.",
