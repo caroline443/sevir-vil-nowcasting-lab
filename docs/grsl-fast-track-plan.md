@@ -20,10 +20,11 @@ backbone is part of the GRSL contribution.
 3. Freeze both seeds' independently validation-selected checkpoints.
    **Frozen.**
 4. Evaluate the test split exactly once for persistence and the two paired
-   SimVP variants.
+   SimVP variants. **Completed.**
 5. Save event-grouped sufficient statistics during the same test pass.
+   **Completed.**
 6. Compute paired event-bootstrap intervals conditional on the two trained
-   seeds.
+   seeds. **Completed, 10,000 replicates over 4,053 events.**
 7. Produce one compact main table, one threshold/lead figure and one
    qualitative severe-event figure.
 8. Write and audit a five-page IEEE manuscript.

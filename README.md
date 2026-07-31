@@ -25,6 +25,8 @@ This repository is deliberately **problem-first**. A model change is added only 
   inference and five-page manuscript preparation are the remaining gates.
 - EXP-026: native seed-1 replication completed and passed; the frozen one-time
   test evaluation is authorized.
+- EXP-027: frozen two-seed test and 10,000-replicate event bootstrap completed;
+  the GRSL evidence gate passed.
 
 ## Repository layout
 
@@ -73,7 +75,9 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [Paper-facing evaluation protocol](docs/evaluation-protocol.md)
 - [EXP-025: native-resolution paper SimVP seed-0 pair](experiments/EXP-025-paper-simvp-384-seed0/README.md)
 - [EXP-026: native-resolution seed-1 replication](experiments/EXP-026-paper-simvp-384-seed1/README.md)
+- [EXP-027: frozen GRSL final test](experiments/EXP-027-grsl-final-test/README.md)
 - [GRSL fast-track plan](docs/grsl-fast-track-plan.md)
+- [GRSL manuscript outline](docs/grsl-manuscript-outline.md)
 
 ## Implementation references
 
