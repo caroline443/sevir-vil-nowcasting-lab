@@ -29,6 +29,15 @@ backbone is part of the GRSL contribution.
    qualitative severe-event figure.
 8. Write and audit a five-page IEEE manuscript.
 
+## 2026-07-31 result-audit correction
+
+The final test establishes a paired method effect, not submission readiness.
+The literature-comparable metric is `mCSI_lead_avg`, for which the method
+obtains 0.41155. This is below mature full-resolution references, and the
+three-epoch training budget is not comparable with 50- to 200-epoch papers.
+Resume the frozen pairs with validation-only selection before manuscript
+submission. Do not access test during this continuation.
+
 Native seed 2, native cross-backbone training and large hyperparameter grids
 are removed from the GRSL critical path. Existing bounded PM, FACL, gSTA and
 ConvLSTM experiments may be reported compactly as development controls, with

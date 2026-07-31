@@ -11,11 +11,22 @@
     "test_frozen": true
   },
   "persistence": {
+    "mcsi_lead_avg": 0.2694484078564868,
     "mcsi_global": 0.2615189083283865,
     "mse": 0.01152859053707679,
     "mae": 0.044349940449839476
   },
   "seed_aggregate": {
+    "mcsi_lead_avg": {
+      "baseline_mean": 0.38892849634032833,
+      "baseline_sample_std": 0.002268367108335238,
+      "proposed_mean": 0.4115525270473958,
+      "proposed_sample_std": 0.0003825428017468547,
+      "difference_mean": 0.022624030707067477,
+      "relative_change_percent": 5.8170154462712675,
+      "event_bootstrap_95": null,
+      "note": "Primary literature-comparable CSI-M reduction; existing bootstrap file covers mcsi_global."
+    },
     "mcsi_global": {
       "baseline_mean": 0.3942667781015624,
       "baseline_sample_std": 0.003576046456493769,
@@ -102,9 +113,10 @@
     }
   },
   "decision": {
-    "grsl_evidence_gate": "pass",
+    "method_effect_gate": "pass",
+    "grsl_submission_readiness": "fail_pending_convergence_and_strong_baseline_audit",
     "additional_test_access": false,
-    "additional_native_training": false,
-    "next": "figures_and_five_page_manuscript"
+    "additional_native_training": "resume_validation_only_continuation_authorized",
+    "next": "continue_frozen_pairs_to_a_predeclared_convergence_stop_before_any_new_test_access"
   }
 }

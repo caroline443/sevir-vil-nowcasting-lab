@@ -78,6 +78,7 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [EXP-027: frozen GRSL final test](experiments/EXP-027-grsl-final-test/README.md)
 - [GRSL fast-track plan](docs/grsl-fast-track-plan.md)
 - [GRSL manuscript outline](docs/grsl-manuscript-outline.md)
+- [SEVIR result benchmark audit and revised publication decision](docs/sevir-result-benchmark-audit.md)
 
 ## Implementation references
 

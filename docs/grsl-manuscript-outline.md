@@ -18,8 +18,10 @@ above severe VIL thresholds for every sample and forecast lead. The constraint
 is differentiable, displacement tolerant, and adds no inference-time
 parameters. We evaluate it with an official SimVP implementation on the
 event-disjoint SEVIR test set at native 384x384 resolution using two paired
-training seeds. The proposed objective increases global mean critical success
-index from 0.3943 to 0.4119. CSI at raw VIL thresholds 160, 181, and 219
+training seeds. Under the literature-standard lead-averaged reduction, the
+proposed objective increases mean critical success index from 0.3889 to
+0.4116. The global-count reduction increases from 0.3943 to 0.4119. CSI at raw
+VIL thresholds 160, 181, and 219
 improves by 11.0%, 18.9%, and 19.1%, respectively, while MSE and MAE decrease
 by 1.5% and 2.6%. Ten thousand paired storm-event bootstrap replicates place
 the global mCSI gain in [0.0172, 0.0181]. The gain is driven by higher severe
@@ -27,6 +29,10 @@ echo detection and therefore reduces success ratio, exposing a clear
 recall--false-alarm tradeoff. These results show that explicitly preserving
 severe exceedance extent can reduce long-lead echo abstention without changing
 the forecasting backbone.
+
+This abstract is a working draft only. It must not be submitted until the
+validation-only convergence continuation and strong-baseline audit described
+in `sevir-result-benchmark-audit.md` are complete.
 
 ## Contributions
 
@@ -65,7 +71,8 @@ or a compact second row.
 
 ## Claim language
 
-Allowed: reduces severe-echo abstention; improves severe CSI and POD; no added
+Allowed after convergence confirmation: reduces severe-echo abstention;
+improves severe CSI and POD; no added
 inference parameters; replicated across two native-resolution seeds; positive
 event-bootstrap intervals conditional on trained seeds.
 
