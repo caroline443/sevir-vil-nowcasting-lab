@@ -79,6 +79,7 @@ The generated file is ignored by Git. After checking it, either paste its conten
 - [GRSL fast-track plan](docs/grsl-fast-track-plan.md)
 - [GRSL manuscript outline](docs/grsl-manuscript-outline.md)
 - [SEVIR result benchmark audit and revised publication decision](docs/sevir-result-benchmark-audit.md)
+- [RTX 5090 migration and convergence plan](docs/rtx5090-migration-plan.md)
 
 ## Implementation references
 

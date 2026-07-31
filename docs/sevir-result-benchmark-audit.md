@@ -143,14 +143,16 @@ low-resolution diagnostic.
 
 ### Minimum experiment that can change the verdict
 
-Do not add a new architecture. Continue the frozen baseline and SEA checkpoints
-with identical schedules and evaluate validation after each epoch.
+Do not add a new architecture. Retrain the frozen baseline and SEA
+configurations from scratch with an identical, longer schedule and evaluate
+validation after each epoch. The existing three-epoch OneCycleLR checkpoints
+cannot be extended exactly because their schedules have already completed.
 
 Predeclare:
 
-1. resume both seed pairs from epoch 3;
-2. train to at least epoch 10, preferably until validation `mCSI_lead_avg`
-   fails to improve for three consecutive epochs;
+1. declare a longer total budget before starting and train a fresh seed-0 pair;
+2. use at least 10 epochs for the convergence gate and inspect only validation
+   `mCSI_lead_avg`;
 3. select each checkpoint using validation only;
 4. do not access test during continuation;
 5. rerun the frozen test only once after the stopping rule fires;
@@ -160,8 +162,8 @@ Predeclare:
 8. if the effect collapses with convergence, do not submit the current method.
 
 The fastest credible compute path is a rented RTX 5090 for checkpoint
-continuation. Paying for convergence is more valuable than paying for another
-backbone or another speculative module.
+retraining. Paying for convergence is more valuable than paying for another
+backbone or another speculative module. See `rtx5090-migration-plan.md`.
 
 ## Primary sources
 

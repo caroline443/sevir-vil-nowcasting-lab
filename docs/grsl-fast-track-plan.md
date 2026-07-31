@@ -35,8 +35,10 @@ The final test establishes a paired method effect, not submission readiness.
 The literature-comparable metric is `mCSI_lead_avg`, for which the method
 obtains 0.41155. This is below mature full-resolution references, and the
 three-epoch training budget is not comparable with 50- to 200-epoch papers.
-Resume the frozen pairs with validation-only selection before manuscript
-submission. Do not access test during this continuation.
+Retrain the frozen pairs from scratch under a longer, predeclared OneCycle
+budget with validation-only selection before manuscript submission. The
+completed three-epoch scheduler cannot be extended exactly. Do not access test
+during this convergence experiment.
 
 Native seed 2, native cross-backbone training and large hyperparameter grids
 are removed from the GRSL critical path. Existing bounded PM, FACL, gSTA and
