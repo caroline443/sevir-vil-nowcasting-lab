@@ -21,6 +21,7 @@ from sevir_nowcasting.data import SevirVILWindowDataset
 from sevir_nowcasting.event_metrics import EventVILStats
 from sevir_nowcasting.metrics import LeadTimeVILMetrics
 from train_openstl_simvp import build_model, predict_12
+from train_paper_simvp import apply_output_activation
 
 
 def parse_args() -> argparse.Namespace:
@@ -89,6 +90,7 @@ def main() -> int:
         raise RuntimeError("checkpoint lacks a paper-protocol signature")
     resolution = int(signature["resolution"])
     model_type = str(signature["model_type"])
+    training_loss = str(signature.get("training_loss", "mse"))
 
     dataset = SevirVILWindowDataset(
         args.manifest,
@@ -127,7 +129,9 @@ def main() -> int:
             inputs = batch["inputs"].to(device, non_blocking=True)
             targets = batch["targets"].to(device, non_blocking=True)
             with torch.autocast("cuda", dtype=torch.bfloat16):
-                predictions = predict_12(model, inputs)
+                predictions = apply_output_activation(
+                    predict_12(model, inputs), training_loss
+                )
             metrics.update(predictions, targets)
             event_stats.update(batch["event_id"], predictions, targets)
             samples += inputs.shape[0]

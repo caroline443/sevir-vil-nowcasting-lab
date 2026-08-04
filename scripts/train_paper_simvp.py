@@ -20,7 +20,11 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from sevir_nowcasting.data import SevirVILWindowDataset
-from sevir_nowcasting.losses import SoftExceedanceAreaLoss
+from sevir_nowcasting.losses import (
+    FourierAmplitudeCorrelationLoss,
+    ProbabilityMatchingLoss,
+    SoftExceedanceAreaLoss,
+)
 from sevir_nowcasting.metrics import LeadTimeVILMetrics
 from train_openstl_simvp import build_model, predict_12
 
@@ -53,6 +57,24 @@ def parse_args() -> argparse.Namespace:
         "--model-type", choices=("IncepU", "gSTA"), default="IncepU"
     )
     parser.add_argument("--tail-area-weight", type=float, default=0.0)
+    parser.add_argument(
+        "--probability-matching-weight",
+        type=float,
+        default=0.0,
+        help="weight of the Cao et al. probability-matching constraint",
+    )
+    parser.add_argument(
+        "--training-loss",
+        choices=("mse", "facl"),
+        default="mse",
+        help="primary loss; facl replaces MSE as in Yan et al.",
+    )
+    parser.add_argument(
+        "--facl-constant-ratio",
+        type=float,
+        default=0.1,
+        help="final fraction of updates using only FACL amplitude loss",
+    )
     parser.add_argument(
         "--tail-thresholds", type=float, nargs="+", default=[160, 181, 219]
     )
@@ -93,6 +115,16 @@ def parse_args() -> argparse.Namespace:
         parser.error("learning rate must be positive")
     if args.tail_area_weight < 0 or args.tail_temperature_raw <= 0:
         parser.error("tail settings are invalid")
+    if args.probability_matching_weight < 0:
+        parser.error("probability-matching-weight must be non-negative")
+    if args.tail_area_weight > 0 and args.probability_matching_weight > 0:
+        parser.error("enable either tail area or probability matching, not both")
+    if not 0 <= args.facl_constant_ratio < 1:
+        parser.error("facl-constant-ratio must be in [0, 1)")
+    if args.training_loss == "facl" and (
+        args.tail_area_weight > 0 or args.probability_matching_weight > 0
+    ):
+        parser.error("FACL replaces MSE and cannot be combined with auxiliary losses")
     return args
 
 
@@ -120,6 +152,20 @@ def is_better(
     if selection_metric == "mse":
         return candidate < incumbent
     raise ValueError(f"unsupported selection metric: {selection_metric}")
+
+
+def apply_output_activation(
+    predictions: torch.Tensor,
+    training_loss: str,
+) -> torch.Tensor:
+    """Apply method-specific output constraints used by the source paper."""
+    if training_loss == "facl":
+        # Yan et al. append sigmoid for FACL to avoid the brightness/range
+        # degeneracy of the early correlation-loss phase.
+        return torch.sigmoid(predictions)
+    if training_loss == "mse":
+        return predictions
+    raise ValueError(f"unsupported training loss: {training_loss}")
 
 
 def make_loader(
@@ -165,6 +211,9 @@ def configuration_signature(
         "seed": args.seed,
         "model_type": args.model_type,
         "tail_area_weight": args.tail_area_weight,
+        "probability_matching_weight": args.probability_matching_weight,
+        "training_loss": args.training_loss,
+        "facl_constant_ratio": args.facl_constant_ratio,
         "tail_thresholds": list(args.tail_thresholds),
         "tail_temperature_raw": args.tail_temperature_raw,
         "selection_metric": args.selection_metric,
@@ -196,6 +245,7 @@ def evaluate(
     loader: DataLoader,
     device: torch.device,
     max_batches: int,
+    training_loss: str,
 ) -> tuple[dict[str, object], int]:
     model.eval()
     metrics = LeadTimeVILMetrics(output_length=12)
@@ -206,7 +256,9 @@ def evaluate(
         inputs = batch["inputs"].to(device, non_blocking=True)
         targets = batch["targets"].to(device, non_blocking=True)
         with torch.autocast("cuda", dtype=torch.bfloat16):
-            predictions = predict_12(model, inputs)
+            predictions = apply_output_activation(
+                predict_12(model, inputs), training_loss
+            )
         metrics.update(predictions, targets)
         completed += 1
     return metrics.compute(), completed
@@ -285,6 +337,11 @@ def main() -> int:
         thresholds_raw=args.tail_thresholds,
         temperature_raw=args.tail_temperature_raw,
     ).to(device)
+    probability_matching_criterion = ProbabilityMatchingLoss().to(device)
+    facl_criterion = FourierAmplitudeCorrelationLoss(
+        total_steps=total_steps,
+        constant_ratio=args.facl_constant_ratio,
+    ).to(device)
 
     start_epoch = 1
     global_step = 0
@@ -308,6 +365,7 @@ def main() -> int:
         best_epoch = checkpoint["best_epoch"]
         history = list(checkpoint["history"])
         restore_rng_state(checkpoint, train_generator)
+        facl_criterion.step = global_step
     end_epoch = (
         args.epochs
         if args.stop_after_epoch == 0
@@ -328,6 +386,9 @@ def main() -> int:
         epoch_objective_sum = 0.0
         epoch_mse_sum = 0.0
         epoch_tail_sum = 0.0
+        epoch_probability_matching_sum = 0.0
+        epoch_facl_sum = 0.0
+        facl_term_counts = {"fal": 0, "fcl": 0}
         completed_train_batches = 0
         for batch_index, batch in enumerate(train_loader):
             if batch_index >= train_batches_per_epoch:
@@ -336,13 +397,32 @@ def main() -> int:
             targets = batch["targets"].to(device, non_blocking=True)
             optimizer.zero_grad(set_to_none=True)
             with torch.autocast("cuda", dtype=torch.bfloat16):
-                predictions = predict_12(model, inputs)
+                predictions = apply_output_activation(
+                    predict_12(model, inputs), args.training_loss
+                )
             mse_loss = mse_criterion(predictions.float(), targets.float())
             if args.tail_area_weight > 0:
                 tail_loss = tail_criterion(predictions, targets)
             else:
                 tail_loss = mse_loss.new_zeros(())
-            objective = mse_loss + args.tail_area_weight * tail_loss
+            if args.probability_matching_weight > 0:
+                probability_matching_loss = probability_matching_criterion(
+                    predictions, targets
+                )
+            else:
+                probability_matching_loss = mse_loss.new_zeros(())
+            if args.training_loss == "facl":
+                facl_loss = facl_criterion(predictions, targets)
+                facl_term_counts[facl_criterion.last_term] += 1
+                objective = facl_loss
+            else:
+                facl_loss = mse_loss.new_zeros(())
+                objective = (
+                    mse_loss
+                    + args.tail_area_weight * tail_loss
+                    + args.probability_matching_weight
+                    * probability_matching_loss
+                )
             if not torch.isfinite(objective):
                 raise RuntimeError(
                     f"non-finite objective at epoch={epoch}, batch={batch_index}"
@@ -356,6 +436,10 @@ def main() -> int:
             epoch_objective_sum += float(objective.detach())
             epoch_mse_sum += float(mse_loss.detach())
             epoch_tail_sum += float(tail_loss.detach())
+            epoch_probability_matching_sum += float(
+                probability_matching_loss.detach()
+            )
+            epoch_facl_sum += float(facl_loss.detach())
             if global_step == 1 or global_step % args.log_every == 0:
                 print(
                     json.dumps(
@@ -365,6 +449,15 @@ def main() -> int:
                             "objective": float(objective.detach()),
                             "mse_loss": float(mse_loss.detach()),
                             "tail_area_loss": float(tail_loss.detach()),
+                            "probability_matching_loss": float(
+                                probability_matching_loss.detach()
+                            ),
+                            "facl_loss": float(facl_loss.detach()),
+                            "facl_term": (
+                                facl_criterion.last_term
+                                if args.training_loss == "facl"
+                                else None
+                            ),
                             "learning_rate": optimizer.param_groups[0]["lr"],
                         },
                         sort_keys=True,
@@ -380,6 +473,7 @@ def main() -> int:
             val_loader,
             device,
             validation_batches,
+            args.training_loss,
         )
         torch.cuda.synchronize(device)
         validation_wall_seconds = time.perf_counter() - validation_started
@@ -399,6 +493,11 @@ def main() -> int:
             "mean_train_tail_area_loss": (
                 epoch_tail_sum / completed_train_batches
             ),
+            "mean_train_probability_matching_loss": (
+                epoch_probability_matching_sum / completed_train_batches
+            ),
+            "mean_train_facl_loss": epoch_facl_sum / completed_train_batches,
+            "facl_term_counts": facl_term_counts,
             "training_wall_seconds": training_wall_seconds,
             "training_seconds_per_batch": (
                 training_wall_seconds / completed_train_batches

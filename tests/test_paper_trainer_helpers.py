@@ -4,6 +4,7 @@ import importlib.util
 from pathlib import Path
 
 import pytest
+import torch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,3 +37,19 @@ def test_selection_direction() -> None:
     assert MODULE.is_better("mse", 0.1, 0.2)
     assert not MODULE.is_better("mse", 0.3, 0.2)
     assert MODULE.is_better("mse", 1.0, None)
+
+
+def test_facl_output_activation_is_sigmoid() -> None:
+    values = torch.tensor([-1.0, 0.0, 1.0])
+    actual = MODULE.apply_output_activation(values, "facl")
+    assert torch.allclose(actual, torch.sigmoid(values))
+
+
+def test_mse_output_activation_is_identity() -> None:
+    values = torch.tensor([-1.0, 0.0, 1.0])
+    assert MODULE.apply_output_activation(values, "mse") is values
+
+
+def test_output_activation_rejects_unknown_loss() -> None:
+    with pytest.raises(ValueError, match="unsupported training loss"):
+        MODULE.apply_output_activation(torch.zeros(1), "unknown")
