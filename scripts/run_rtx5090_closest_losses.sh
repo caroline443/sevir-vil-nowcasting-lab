@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# Run publication-protocol closest-loss controls serially on the rented RTX 5090.
-# The short resource gates must pass before either paid full run starts.
+# Complete the remaining four runs in the recommended six-run 384 protocol.
+# Seed-0 MSE/SEA are run by the preceding queue. Resource gates must pass before
+# the closest-loss controls and the seed-1 replication start.
 
 REPO_ROOT="${REPO_ROOT:-/root/autodl-tmp/sevir-vil-nowcasting-lab}"
 DATA_ROOT="${DATA_ROOT:-/root/autodl-tmp/sevir_data}"
@@ -36,7 +37,6 @@ common_args=(
   --learning-rate 0.005
   --selection-metric mcsi_global
   --log-every 500
-  --seed 0
   --workers 4
 )
 
@@ -47,6 +47,7 @@ echo "PM resource gate started: $(date -Is)"
   --epochs 1 \
   --max-train-batches 200 \
   --max-val-batches 50 \
+  --seed 0 \
   --probability-matching-weight 10
 
 echo "FACL resource gate started: $(date -Is)"
@@ -56,6 +57,7 @@ echo "FACL resource gate started: $(date -Is)"
   --epochs 1 \
   --max-train-batches 200 \
   --max-val-batches 50 \
+  --seed 0 \
   --training-loss facl \
   --facl-constant-ratio 0.1
 
@@ -64,6 +66,7 @@ echo "PM formal run started: $(date -Is)"
   "${common_args[@]}" \
   --output-dir "$ARTIFACTS/exp029_pm_w10_seed0_384_b2_e10" \
   --epochs 10 \
+  --seed 0 \
   --probability-matching-weight 10
 
 echo "FACL formal run started: $(date -Is)"
@@ -71,7 +74,25 @@ echo "FACL formal run started: $(date -Is)"
   "${common_args[@]}" \
   --output-dir "$ARTIFACTS/exp030_facl_seed0_384_b2_e10" \
   --epochs 10 \
+  --seed 0 \
   --training-loss facl \
   --facl-constant-ratio 0.1
+
+echo "MSE seed-1 formal run started: $(date -Is)"
+"$PYTHON" scripts/train_paper_simvp.py \
+  "${common_args[@]}" \
+  --output-dir "$ARTIFACTS/exp032_mse_seed1_384_b2_e10" \
+  --epochs 10 \
+  --seed 1
+
+echo "SEA seed-1 formal run started: $(date -Is)"
+"$PYTHON" scripts/train_paper_simvp.py \
+  "${common_args[@]}" \
+  --output-dir "$ARTIFACTS/exp033_sea_seed1_384_b2_e10" \
+  --epochs 10 \
+  --seed 1 \
+  --tail-area-weight 0.0003 \
+  --tail-temperature-raw 10 \
+  --tail-thresholds 160 181 219
 
 date -Is > "$ARTIFACTS/rtx5090_closest_losses/SUCCESS"
