@@ -54,3 +54,20 @@ def test_upstream_preserves_fixed_decrement_and_stop() -> None:
 def test_unknown_schedule_is_rejected() -> None:
     with pytest.raises(ValueError):
         probability("unknown", 0)
+
+
+@pytest.mark.parametrize(
+    ("requested", "available", "expected"),
+    [(0, 10, 10), (3, 10, 3), (20, 10, 10)],
+)
+def test_loader_batch_limit(
+    requested: int, available: int, expected: int
+) -> None:
+    assert MODULE.loader_batch_limit(requested, available) == expected
+
+
+def test_selection_direction() -> None:
+    assert MODULE.is_better("mcsi_global", 0.3, 0.2)
+    assert not MODULE.is_better("mcsi_global", 0.1, 0.2)
+    assert MODULE.is_better("mse", 0.1, 0.2)
+    assert not MODULE.is_better("mse", 0.3, 0.2)

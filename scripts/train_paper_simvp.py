@@ -80,6 +80,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--tail-temperature-raw", type=float, default=10.0)
     parser.add_argument(
+        "--tail-temporal-mode",
+        choices=("per_lead", "sequence_mean"),
+        default="per_lead",
+        help="match exceedance area per lead or only after sequence averaging",
+    )
+    parser.add_argument(
         "--selection-metric",
         choices=("mcsi_global", "mse"),
         default="mcsi_global",
@@ -216,6 +222,7 @@ def configuration_signature(
         "facl_constant_ratio": args.facl_constant_ratio,
         "tail_thresholds": list(args.tail_thresholds),
         "tail_temperature_raw": args.tail_temperature_raw,
+        "tail_temporal_mode": args.tail_temporal_mode,
         "selection_metric": args.selection_metric,
     }
 
@@ -336,6 +343,7 @@ def main() -> int:
     tail_criterion = SoftExceedanceAreaLoss(
         thresholds_raw=args.tail_thresholds,
         temperature_raw=args.tail_temperature_raw,
+        temporal_mode=args.tail_temporal_mode,
     ).to(device)
     probability_matching_criterion = ProbabilityMatchingLoss().to(device)
     facl_criterion = FourierAmplitudeCorrelationLoss(
@@ -352,7 +360,13 @@ def main() -> int:
         checkpoint = torch.load(
             args.resume, map_location="cpu", weights_only=False
         )
-        if checkpoint.get("configuration_signature") != signature:
+        checkpoint_signature = dict(
+            checkpoint.get("configuration_signature", {})
+        )
+        # Checkpoints predating the structural ablation flag always used the
+        # current default: separate area matching at every lead.
+        checkpoint_signature.setdefault("tail_temporal_mode", "per_lead")
+        if checkpoint_signature != signature:
             raise RuntimeError(
                 "resume configuration differs from checkpoint signature"
             )

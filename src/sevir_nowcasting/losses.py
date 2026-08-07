@@ -29,17 +29,23 @@ class SoftExceedanceAreaLoss(nn.Module):
         self,
         thresholds_raw: Sequence[float] = (160.0, 181.0, 219.0),
         temperature_raw: float = 2.0,
+        temporal_mode: str = "per_lead",
     ) -> None:
         super().__init__()
         if not thresholds_raw:
             raise ValueError("at least one threshold is required")
         if temperature_raw <= 0:
             raise ValueError("temperature_raw must be positive")
+        if temporal_mode not in {"per_lead", "sequence_mean"}:
+            raise ValueError(
+                "temporal_mode must be 'per_lead' or 'sequence_mean'"
+            )
         thresholds = torch.as_tensor(tuple(thresholds_raw), dtype=torch.float32)
         if not torch.isfinite(thresholds).all() or (thresholds < 0).any():
             raise ValueError("thresholds_raw must be finite and non-negative")
         self.register_buffer("thresholds", thresholds / 255.0)
         self.temperature = float(temperature_raw) / 255.0
+        self.temporal_mode = temporal_mode
 
     def soft_counts(self, values: torch.Tensor) -> torch.Tensor:
         """Return ``[B,T,K]`` differentiable exceedance pixel counts."""
@@ -60,8 +66,13 @@ class SoftExceedanceAreaLoss(nn.Module):
                 f"prediction and target shapes differ: {tuple(prediction.shape)} "
                 f"vs {tuple(target.shape)}"
             )
-        predicted_log_area = torch.log1p(self.soft_counts(prediction))
-        target_log_area = torch.log1p(self.soft_counts(target).detach())
+        predicted_area = self.soft_counts(prediction)
+        target_area = self.soft_counts(target).detach()
+        if self.temporal_mode == "sequence_mean":
+            predicted_area = predicted_area.mean(dim=1)
+            target_area = target_area.mean(dim=1)
+        predicted_log_area = torch.log1p(predicted_area)
+        target_log_area = torch.log1p(target_area)
         return F.smooth_l1_loss(predicted_log_area, target_log_area)
 
 
