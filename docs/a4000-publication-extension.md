@@ -13,8 +13,11 @@ The queue first runs two paired ConvLSTM replications:
 3. ConvLSTM + MSE, seed 1;
 4. ConvLSTM + MSE + SEA, seed 1.
 
-ConvLSTM uses budget-aligned scheduled sampling that reaches zero teacher
-forcing on the final update. Validation always uses free rollout. Every epoch
+ConvLSTM first probes batch 48 on the A4000 and falls back to batch 32 if the
+larger batch fails. Learning rates use linear scaling from the accepted
+batch-8 value (`3e-3` for 48 and `2e-3` for 32). It uses budget-aligned
+scheduled sampling that reaches zero teacher forcing on the final update.
+Validation always uses free rollout. Every epoch
 is evaluated on the complete validation split and checkpoints are selected by
 `mcsi_global`.
 
@@ -46,7 +49,7 @@ tail -f artifacts/local/a4000_publication_extension_launcher.log
 
 Success markers are written to:
 
-- `artifacts/local/exp034_convlstm_128_queue/SUCCESS`;
+- `artifacts/local/exp037_convlstm_128_fast_queue/SUCCESS`;
 - `artifacts/local/exp035_sea_ablations_128_queue/SUCCESS`;
 - `artifacts/local/exp036_a4000_publication_extension_128/SUCCESS`.
 
